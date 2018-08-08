@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from collections import Counter
 from pytz import timezone
-from .utils import utils
+from chroniclepy import utils
 import pandas as pd
 import numpy as np
 import os
@@ -119,10 +119,13 @@ def extract_usage(filename,precision=3600,recode=None):
             openapps[app] = {"open": False}
 
     if len(alldata)>0:
-        alldata = alldata.sort_values(by=['start_timestamp','end_timestamp'])
+        alldata = alldata.sort_values(by=['start_timestamp','end_timestamp']).reset_index(drop=True)
         if isinstance(recode,pd.DataFrame):
-            alldata[recode.columns] = alldata.reset_index(drop=True).apply(lambda x: utils.recode(x,recode),axis=1)
-        return alldata[cols+list(recode.columns)].reset_index(drop=True)
+             newcols = alldata.apply(lambda x: utils.recode(x,recode),axis=1)
+             alldata[recode.columns] = newcols
+             cols = cols+list(recode.columns)
+
+        return alldata[cols].reset_index(drop=True)
 
 
 def check_overlap_add_sessions(data, session_def = 5*60):
@@ -175,8 +178,11 @@ def check_overlap_add_sessions(data, session_def = 5*60):
     return data.reset_index(drop=True)
 
 def preprocess(infolder,outfolder,recodefile=None,precision=3600,sessioninterval = 5*60):
+
+    if not os.path.exists(outfolder):
+        os.mkdir(outfolder)
     if isinstance(recodefile,str):
-        recode = pd.read_csv("utils/data/appcat.csv",index_col='fullname')
+        recode = pd.read_csv(recodefile,index_col='fullname')
     else:
         recode = None
 
