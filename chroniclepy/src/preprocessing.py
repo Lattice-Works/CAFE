@@ -186,10 +186,10 @@ def preprocess(infolder,outfolder,recodefile=None,precision=3600,sessioninterval
     else:
         recode = None
 
-    for filename in os.listdir(infolder):
+    for filename in [x for x in os.listdir(infolder) if x.startswith("Chronicle")]:
         tmp = extract_usage(os.path.join(infolder,filename),precision=precision,recode=recode)
         if not isinstance(tmp,pd.DataFrame):
             print("WARNING: File %s does not seem to contain relevant data.  Skipping..."%filename)
             continue
         data = check_overlap_add_sessions(tmp,session_def=sessioninterval)
-        data.to_csv(os.path.join(outfolder,filename))
+        data.to_csv(os.path.join(outfolder,filename),index=False)
