@@ -24,7 +24,7 @@ def read_and_clean_data(filenm):
     thisdata = thisdata[thisdata['ol.recordtype'] != 'Usage Stat']
     thisdata = thisdata[['general.fullname','ol.recordtype','ol.datelogged','person','ol.timezone']]
     if any(thisdata['ol.timezone']==None):
-        print("WARNING: File %s has no timezone information.  Registering reported time.")
+        print("WARNING: File %s has no timezone information.  Registering reported time."%filenm)
         thisdata['ol.timezone'] = "UTC"
     thisdata['dt_logged'] = thisdata.apply(utils.get_dt,axis=1)
     thisdata['action'] = thisdata.apply(utils.get_action,axis=1)
