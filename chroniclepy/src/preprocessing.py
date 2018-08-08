@@ -139,13 +139,8 @@ def check_overlap_add_sessions(data, session_def = 5*60):
     data = data[data.duration_seconds > 0].reset_index(drop=True)
 
     # initiate session column(s)
-    if isinstance(session_def,int):
-        data['newsession'] = False
-    elif isinstance(session_def,list):
-        for sess in session_def:
-            data['newsession_%is'%int(sess)] = False
-    else:
-        raise ValueError("ERROR: I don't understand the type of the session definition.")
+    for sess in session_def:
+        data['new_engage_%is'%int(sess)] = False
 
     # loop over dataset:
     # - prevent overlap (with warning)
@@ -170,13 +165,9 @@ def check_overlap_add_sessions(data, session_def = 5*60):
             data.at[idx-1,'duration_seconds'] = (data.at[idx-1,'end_timestamp']-data.at[idx-1,'start_timestamp']).seconds
         # check sessions
         else:
-            if isinstance(session_def,int):
-                if nousetime > timedelta(seconds = session_def):
-                    data.at[idx, 'newsession'] = True
-            else:
-                for sess in session_def:
-                    if nousetime > timedelta(seconds = sess):
-                        data.at[idx, 'newsession_%is'%int(sess)] = True
+            for sess in session_def:
+                if nousetime > timedelta(seconds = sess):
+                    data.at[idx, 'new_engage_%is'%int(sess)] = True
 
     return data.reset_index(drop=True)
 

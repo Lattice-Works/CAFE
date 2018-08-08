@@ -9,13 +9,13 @@ def summarise_daily(preprocessed):
            'end_timestamp', 'day', 'weekday', 'hour', 'quarter',
            'duration_seconds']
 
-    sescols = [x for x in preprocessed.columns if x.startswith('newsession')]
+    sescols = [x for x in preprocessed.columns if x.startswith('new_engage')]
 
     # simple daily aggregate functions
 
     dailyfunctions = {
         "duration_seconds": {
-            "usage": 'sum'
+            "duration": 'sum'
             },
         "app_fullname": {
             "appcnt": 'count'
@@ -29,7 +29,7 @@ def summarise_daily(preprocessed):
 
     hourlyfunctions = {
         "duration_seconds": {
-            "usage": 'sum'
+            "duration": 'sum'
         },
         'app_fullname': {
             "appcnt": "count"
@@ -46,7 +46,7 @@ def summarise_daily(preprocessed):
     sesfunctions = {k: 'count' for k in sescols}
 
     sessions = preprocessed.groupby(['date']).agg(sesfunctions)
-    sessions.columns = ["sessions_%s"%ses.split("_")[1] for ses in (sessions.columns)]
+    sessions.columns = ["engage_%s"%ses.split("_")[2] for ses in (sessions.columns)]
 
     daily = pd.merge(daily,sessions, on='date')
 
@@ -55,7 +55,7 @@ def summarise_daily(preprocessed):
     addedcols = list(set(preprocessed.columns) - set(stdcols) - set(sescols))
 
     for addedcol in addedcols:
-        preprocessed[addedcol] = preprocessed['categories'].fillna("notcoded")
+        preprocessed[addedcol] = preprocessed[addedcol].fillna("notcoded")
         customgrouped = preprocessed[['date',addedcol,'duration_seconds']].groupby(['date',addedcol]).agg(sum).unstack(addedcol)
         customgrouped.columns = ["custom_%s_%s"%(addedcol,x) for x in customgrouped.columns.droplevel(0)]
         daily = pd.merge(daily,customgrouped, on='date')
@@ -69,7 +69,7 @@ def summarise_daily(preprocessed):
 
     appcnts = [x for x in daily.columns if 'appcnt' in x]
     for col in appcnts:
-        daily[col.replace("appcnt","appswitching_per_minute")] = daily[col]/daily[col.replace("appcnt","usage")]*60.
+        daily[col.replace("appcnt","appswitching_per_minute")] = daily[col]/daily[col.replace("appcnt","duration")]*60.
     daily = daily.drop(appcnts,axis=1)
 
     return daily
