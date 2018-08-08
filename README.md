@@ -31,6 +31,19 @@ To run the data processing, run in the terminal (where you replace `/Users/openl
       /Users/openlattice/chroniclepy/examples/preprocessed \
       /Users/openlattice/chroniclepy/examples/output
 
+If you'd want to set a folder as an environment variable for easier readability, you could run:
+
+    FOLDER=/Users/openlattice/chroniclepy/examples/
+
+    docker run \
+      -v $FOLDER:$FOLDER \
+      openlattice/chroniclepy \
+      all \
+      $FOLDER/rawdata \
+      $FOLDER/preprocessed \
+      $FOLDER/output
+
+
 ##### A little bit of explanation of the parts  of this statement:
 - `docker run`: Docker is a service of containers.  This statement allows to run our container.
 - `-v /Users/openlattice/chroniclepy/examples/:/Users/openlattice/chroniclepy/examples/`: Docker can't access your local files.  This is very handy to re-run your analysis on a different computer since it only depends on itself.  However, that means that you have to tell Docker which folders on your computer it should be allowed to access.  This statement makes sure docker can read/write your files.
