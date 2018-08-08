@@ -22,7 +22,10 @@ def read_and_clean_data(filenm):
     if len(thisdata)==0:
         return(thisdata)
     thisdata = thisdata[thisdata['ol.recordtype'] != 'Usage Stat']
-    thisdata = thisdata[['general.fullname','ol.recordtype','ol.datelogged','person']]
+    thisdata = thisdata[['general.fullname','ol.recordtype','ol.datelogged','person','ol.timezone']]
+    if any(thisdata['ol.timezone']==None):
+        print("WARNING: File %s has no timezone information.  Registering reported time.")
+        thisdata['ol.timezone'] = "UTC"
     thisdata['dt_logged'] = thisdata.apply(utils.get_dt,axis=1)
     thisdata['action'] = thisdata.apply(utils.get_action,axis=1)
     thisdata = thisdata.sort_values(by=['dt_logged','action']).reset_index(drop=True)
