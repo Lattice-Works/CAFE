@@ -16,12 +16,12 @@ This will pull our container from https://hub.docker.com/r/openlattice/chronicle
 
 ### Get the example data
 
-Click the button `clone or download` and click `Download ZIP`. Extract.
-For what's next, we're assuming the data is in in `/Users/openlattice/chroniclepy/examples/`
+Click the button `clone or download` on github and click `Download ZIP`. Extract.
+For what's next, we're assuming the data is in in `/Users/openlattice/chroniclepy/examples/`.   For your local application, replace `/Users/openlattice/chroniclepy/examples/` with the directory you put the data in.
 
 ### Run preprocessing and summary
 
-To run the data processing, run in the terminal (where you replace `/Users/openlattice/chroniclepy/examples/` with the directory you put the data in):
+To run the data processing, run in the terminal:
 
     docker run \
       -v /Users/openlattice/chroniclepy/examples/:/Users/openlattice/chroniclepy/examples/ \
@@ -55,7 +55,7 @@ If you'd want to set a folder as an environment variable for easier readability,
 
 ##### There are a few additional parameters passed to the program.  
 - Preprocessing arguments:
-    - `--recodefile`: This is a file that has some more information on apps, for example categorisation.  This information will be added to the preprocessed data.
+    - `--recodefile`: This is a file that has some more information on apps, for example categorisation.  This information will be added to the preprocessed data.  Refer to the example data for the exact format.
     - `--precision`: This is the precision in seconds.  This default is 3600 seconds (1 hour).  This means that when an app was used when the hour was passed (eg. 21.45-22.15), the data will be split up in two lines: *21.45-22.00* and *22.00-22.15*.  This allows to analyze the data by any time unit (eg. seconds for biophysical data, quarters for diary data,...).
     - `--sessioninterval`: This is the minimal interval (in seconds) of non-activity for an engagement to be considered a *new* engagement.  There can be multiple session intervals defined (i.e. `--sessioninterval=60 --sessioninterval=300`).  The default is 60 seconds (1 minute).
 - Summary arguments:
