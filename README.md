@@ -90,7 +90,8 @@ When running the preprocessing, the data is transformed into a table for each pa
 - *weekday:* Whether or not this is a weekday: 0 = Mon-Fri, 1 = Sat+Sun
 - *hour:* Hour of day
 - *quarter:* Quarter of hour: 0 = first (.00-.15), 1 = second,...
-- *newsession_(duration):* Whether a new session was initiated with this app usage based on the definition(s) of sessioninterval.  
+- *duration:* Duration (in seconds)
+- *new_engage_(duration):* Whether a new session was initiated with this app usage based on the definition(s) of sessioninterval.  
 - ...: the columns in `recodefile` will appear here.
 
 #### Summary data
@@ -98,11 +99,11 @@ When running the preprocessing, the data is transformed into a table for each pa
 The summary analysis created the following tables:
 - **summary_daily.csv:** Averages per day.
     - *participant_id*
-    - *usage_(mean/std):* mean/std daily usage (seconds)
-    - *sessions_(duration)_(mean/std):* mean/std number of sessions pre day (wrt newsession definition)
+    - *duration_(mean/std):* mean/std daily usage (seconds)
+    - *engage_(duration)_(mean/std):* mean/std number of sessions pre day (wrt newsession definition)
     - *appswitching_per_minute_(mean/std):* mean/std on number of times apps are switched per minute
 - **summary_daily_hourly:** Averages per day for each hour of day.
     - *participant_id*
-    - *hourly_usage_(h0-h23)_(mean/std)*
+    - *hourly_duration_(h0-h23)_(mean/std)*
     - *hourly_appswitching_(h0-h23)_(mean/std)*
 - **summary_daily_custom:** Average usage per day (and per hour of day) for custom categories recorded in `recodefile`.
