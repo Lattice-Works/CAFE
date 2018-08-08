@@ -46,12 +46,12 @@ If you'd want to set a folder as an environment variable for easier readability,
 
 ##### A little bit of explanation of the parts  of this statement:
 - `docker run`: Docker is a service of containers.  This statement allows to run our container.
-- `-v /Users/openlattice/chroniclepy/examples/:/Users/openlattice/chroniclepy/examples/`: Docker can't access your local files.  This is very handy to re-run your analysis on a different computer since it only depends on itself.  However, that means that you have to tell Docker which folders on your computer it should be allowed to access.  This statement makes sure docker can read/write your files.
+- `-v $FOLDER:$FOLDER`: Docker can't access your local files.  This is very handy to re-run your analysis on a different computer since it only depends on itself.  However, that means that you have to tell Docker which folders on your computer it should be allowed to access.  This statement makes sure docker can read/write your files.
 - `openlattice/chroniclepy`: This is the name of the container.  
 - `all`: To run the everything.  You can also separately run `preprocessing` and `summary`
-- `/Users/openlattice/chroniclepy/examples/rawdata`: This is the folder where the raw data sits (the data you can download on the chronicle website).
-- `/Users/openlattice/chroniclepy/examples/preprocessed`.  This is the folder where the preprocessed data will go to.
-- `/Users/openlattice/chroniclepy/examples/output`.  This is the folder where the preprocessed data will go to.
+- `$FOLDER/rawdata`: This is the folder where the raw data sits (the data you can download on the chronicle website).
+- `$FOLDER/preprocessed`.  This is the folder where the preprocessed data will go to.
+- `$FOLDER/output`.  This is the folder where the preprocessed data will go to.
 
 ##### There are a few additional parameters passed to the program.  
 - Preprocessing arguments:
@@ -64,13 +64,13 @@ If you'd want to set a folder as an environment variable for easier readability,
 An example statement for the example data with all custom arguments:
 
     docker run \
-      -v /Users/openlattice/chroniclepy/examples/:/Users/openlattice/chroniclepy/examples/ \
+      -v $FOLDER:$FOLDER \
       openlattice/chroniclepy \
       all \
-      /Users/openlattice/chroniclepy/examples/rawdata \
-      /Users/openlattice/chroniclepy/examples/preprocessed \
-      /Users/openlattice/chroniclepy/examples/output \
-      --recodefile=/Users/openlattice/chroniclepy/examples/categorisation.csv \
+      $FOLDER/rawdata \
+      $FOLDER/preprocessed \
+      $FOLDER/output
+      --recodefile=$FOLDER/categorisation.csv \
       --precision=630 \
       --sessioninterval=300 --sessioninterval=3600 \
       --includestartend
