@@ -56,7 +56,7 @@ def get_timestamps(prevtime,curtime,row=None,precision=60):
             "day": starttime.weekday(),
             "weekday": 0 if starttime.weekday() < 5 else 1,
             "hour": starttime.hour,
-            "quarter": int(np.floor(starttime.minute/15.)*15),
+            "quarter": int(np.floor(starttime.minute/15.)),
             "duration_seconds": (endtime-starttime).seconds,
         }
 

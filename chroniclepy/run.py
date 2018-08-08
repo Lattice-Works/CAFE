@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/python
 
 from argparse import ArgumentParser
 from chroniclepy import preprocessing
@@ -20,7 +19,7 @@ def get_parser():
     prepargs.add_argument('--precision',action='store',type=int, default = 3600,
         help = 'the precision in seconds for the output file. This defines the time \
             unit of the data.  Eg. if the data should be split up by the hour, use 3600.')
-    prepargs.add_argument('--sessioninterval', action='store',type=int, default = 60*10,
+    prepargs.add_argument('--sessioninterval', action='append', default=['300'],
         help = 'the interval (in seconds) that define the start of a new session, i.e. \
             how long should the break be between 2 sessions of phone usages to be considered \
             a new session.')
@@ -35,7 +34,7 @@ def main():
             outfolder = opts.output_dir,
             recodefile = opts.recodefile,
             precision = opts.precision,
-            sessioninterval = opts.sessioninterval
+            sessioninterval = [int(x) for x in opts.sessioninterval]
             )
 
 if __name__ == '__main__':
