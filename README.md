@@ -30,7 +30,9 @@ Go into the directory above your data.
 
 And then run (where you replace `/Users/openlattice` with the directory you put the data in):
 
-    docker run -v /Users/openlattice:/Users/openlattice openlattice/chroniclepy \
+    docker run \
+      -v /Users/openlattice:/Users/openlattice \
+      openlattice/chroniclepy \
       preprocessing \
       /Users/openlattice/chroniclepy/examples/rawdata \
       /Users/openlattice/chroniclepy/examples/preprocessed \
