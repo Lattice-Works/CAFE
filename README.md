@@ -46,9 +46,9 @@ A little bit of explanation of the parts  of this statement:
 - `/Folderto/rawdata`: This is the folder where the raw data sits (the data you can download on the chronicle website).
 - `/Folderto/preprocessed`.  This is the folder where the preprocessed data will go to.
 - The next parameters are parameters passed to the program.  The ones we use right now:
-    - recodefile: This is a file that has some more information on apps, for example categorisation.  This information will be added to the preprocessed data.
-    - precision: This is the precision in seconds.  This example has a precision of 3600s or 1 hour.  This means that when an app was used when the hour was passed (eg. 21.45-22.15), the data will be split up in two lines: `21.45-22.00` and `22.00-22.15`.  This allows to analyse the data by hour of day.
-    - sessioninterval: This is the minimal interval (in seconds) of non-activity for an engagement to be considered a *new* engagement.  There can be multiple session intervals defined (i.e. `--sessioninterval=60 --sessioninterval=300`).
+    - `--recodefile`: This is a file that has some more information on apps, for example categorisation.  This information will be added to the preprocessed data.
+    - `--precision`: This is the precision in seconds.  This example has a precision of 3600s or 1 hour.  This means that when an app was used when the hour was passed (eg. 21.45-22.15), the data will be split up in two lines: `21.45-22.00` and `22.00-22.15`.  This allows to analyse the data by hour of day.
+    - `--sessioninterval`: This is the minimal interval (in seconds) of non-activity for an engagement to be considered a *new* engagement.  There can be multiple session intervals defined (i.e. `--sessioninterval=60 --sessioninterval=300`).
 
 When running the preprocessing, the data is transformed into data tables with the following variables:
 - *participant_id:* Cut out from the csv name.
@@ -61,4 +61,4 @@ When running the preprocessing, the data is transformed into data tables with th
 - *hour:* Hour of day
 - *quarter:* Quarter of hour: 0 = first (.00-.15), 1 = second,...
 - *newsession_\*:* Whether a new session was initiated with this app usage based on the definition(s) of sessioninterval.  
-- *...: * the columns in `recodefile` will appear here.
+- ...: the columns in `recodefile` will appear here.
