@@ -22,10 +22,10 @@ def read_and_clean_data(filenm):
     if len(thisdata)==0:
         return(thisdata)
     thisdata = thisdata[thisdata['ol.recordtype'] != 'Usage Stat']
-    thisdata = thisdata[['general.fullname','ol.recordtype','ol.datelogged','person','ol.timezone']]
-    if any(thisdata['ol.timezone']==None):
-        print("WARNING: File %s has no timezone information.  Registering reported time."%filenm)
+    if not 'ol.timezone' in thisdata.keys() or any(thisdata['ol.timezone']==None):
+        utils.logger("WARNING: File %s has no timezone information.  Registering reported time."%filenm)
         thisdata['ol.timezone'] = "UTC"
+    thisdata = thisdata[['general.fullname','ol.recordtype','ol.datelogged','person','ol.timezone']]
     thisdata['dt_logged'] = thisdata.apply(utils.get_dt,axis=1)
     thisdata['action'] = thisdata.apply(utils.get_action,axis=1)
     thisdata = thisdata.sort_values(by=['dt_logged','action']).reset_index(drop=True)
@@ -152,7 +152,7 @@ def check_overlap_add_sessions(data, session_def = 5*60):
         # check overlap
         nousetime = row['start_timestamp']-data['end_timestamp'].iloc[idx-1]
         if nousetime < timedelta(microseconds=0):
-            print("WARNING: Overlapping usage for participant %s: %s was open since %s when %s was openened on %s. \
+            utils.logger("WARNING: Overlapping usage for participant %s: %s was open since %s when %s was openened on %s. \
             Manually closing %s..."%(
                 row['participant_id'],
                 data.iloc[idx-1]['app_fullname'],
@@ -181,9 +181,10 @@ def preprocess(infolder,outfolder,recodefile=None,precision=3600,sessioninterval
         recode = None
 
     for filename in [x for x in os.listdir(infolder) if x.startswith("Chronicle")]:
+        utils.logger("LOG: Preprocessing file %s..."%filename,level=1)
         tmp = extract_usage(os.path.join(infolder,filename),precision=precision,recode=recode)
         if not isinstance(tmp,pd.DataFrame):
-            print("WARNING: File %s does not seem to contain relevant data.  Skipping..."%filename)
+            utils.logger("WARNING: File %s does not seem to contain relevant data.  Skipping..."%filename)
             continue
         data = check_overlap_add_sessions(tmp,session_def=sessioninterval)
         data.to_csv(os.path.join(outfolder,filename),index=False)

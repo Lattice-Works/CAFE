@@ -15,6 +15,7 @@ def summary(infolder, outfolder, includestartend=False):
 
     alldata = pd.DataFrame({})
     for filenm in files:
+        utils.logger("LOG: Summarising file %s..."%filenm,level=1)
         personid = "-".join(str(filenm).split(".")[-2].split("-")[1:])
         preprocessed = pd.read_csv(os.path.join(infolder,filenm), index_col=0, parse_dates = ['start_timestamp','end_timestamp'])
         if not includestartend:

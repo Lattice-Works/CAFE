@@ -42,3 +42,8 @@ def recode(row,recode):
             newcols[col] = recode[col][row['app_fullname']]
 
     return pd.Series(newcols)
+
+def logger(message,level=1):
+    time = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
+    prefix = "༼ つ ◕_◕ ༽つ" if level==0 else "-- "
+    print("%s %s: %s"%(prefix,time,message))
