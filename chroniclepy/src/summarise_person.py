@@ -39,7 +39,6 @@ def summarise_daily(preprocessed):
             daily = daily.append(newrow)
 
     # hourly daily aggregate functions
-
     hourlyfunctions = {
         "duration_seconds": {
             "dur": 'sum'
@@ -62,13 +61,41 @@ def summarise_daily(preprocessed):
                 hourly = hourly.append(newrow)
 
     hourly = hourly.unstack('hour')
-    hourly.columns = ["hourly_%s_h%s"%(x[0],x[1]) for x in hourly.columns.values]
+    hourly.columns = ["hourly_%s_h%i"%(x[0],int(x[1])) for x in hourly.columns.values]
     hourly.index = pd.to_datetime(hourly.index)
 
     daily = pd.merge(daily,hourly, on='date')
 
-    # session durations
+    # quarterly daily aggregate functions
+    quarterlyfunctions = {
+        "duration_seconds": {
+            "dur": 'sum'
+        },
+        'switch_app': {
+            "appcnt": "sum"
+        }
+    }
 
+    quarterly = preprocessed.groupby(['date','hour','quarter']).agg(quarterlyfunctions)
+    quarterly.columns = quarterly.columns.droplevel(0)
+    quarterly['dur'] = quarterly['dur']/60.
+
+    for date in datelist:
+        datestr = date.strftime("%Y-%m-%d")
+        for hour in range(24):
+            for quarter in range(1,5):
+                multind = (datestr,hour,quarter)
+                if not multind in quarterly.index:
+                    newrow = pd.Series({k:0 for k in quarterly.columns}, name=multind)
+                    quarterly = quarterly.append(newrow)
+
+    quarterly = quarterly.unstack('hour').unstack('quarter')
+    quarterly.columns = ["quarterly_%s_h%i_q%i"%(x[0],int(x[1]),int(x[2])) for x in quarterly.columns.values]
+    quarterly.index = pd.to_datetime(quarterly.index)
+
+    daily = pd.merge(daily,quarterly, on='date')
+
+    # session durations
     for sescol in sescols:
         newcol = '%sdur'%sescol
         sesids = np.where(preprocessed[sescol]==1)[0][1:]
@@ -76,7 +103,6 @@ def summarise_daily(preprocessed):
         endtimes = np.array(preprocessed.end_timestamp.loc[sesids-1])
         durs = (endtimes-starttimes)/ np.timedelta64(1, 'm')
         preprocessed.at[(sesids-1),newcol] = durs
-    # preprocessed[['starttime','endtime',sescol,newcol]]
 
     # sessions
     sesfunctions = {k: 'sum' for k in sescols}
@@ -84,7 +110,7 @@ def summarise_daily(preprocessed):
     sessions = preprocessed.groupby(['date']).agg(sesfunctions)
     sessions[sescols] = sessions[sescols].astype('int')
     sescols = sesfunctions.keys()
-    sessions.columns = ["engage_%s"%ses.split("_")[2] for ses in sescols]
+    sessions.columns = ["engage%s"%ses.split("_")[1] for ses in sescols]
     sessions.index = pd.to_datetime(sessions.index)
 
     daily = pd.merge(daily,sessions, on='date')
@@ -94,7 +120,7 @@ def summarise_daily(preprocessed):
     addedcols = list(set(preprocessed.columns) - set(stdcols) - set(sescols))
 
     for addedcol in addedcols:
-        preprocessed[addedcol] = preprocessed[addedcol].fillna("notcoded")
+        preprocessed[addedcol] = preprocessed[addedcol].fillna("NA")
         customgrouped = preprocessed[['date',addedcol,'duration_seconds']].groupby(['date',addedcol]).agg(sum).unstack(addedcol)
         customgrouped.columns = ["custom_%s_%s"%(addedcol,x) for x in customgrouped.columns.droplevel(0)]
         customgrouped.index = pd.to_datetime(customgrouped.index)
