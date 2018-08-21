@@ -56,10 +56,14 @@ def get_timestamps(prevtime,curtime,row=None,precision=60):
             "start_timestamp": starttime,
             "end_timestamp": endtime,
             "date": starttime.strftime("%Y-%m-%d"),
-            "day": starttime.weekday(),
-            "weekday": 0 if starttime.weekday() < 5 else 1,
+            "starttime": starttime.strftime("%H:%M:%S.%f"),
+            "endtime": endtime.strftime("%H:%M:%S.%f"),
+            "day": (starttime.weekday()+1)%7+1,
+            "weekdayMF": 1 if starttime.weekday() < 5 else 0,
+            "weekdayMTh": 1 if starttime.weekday() < 4 else 0,
+            "weekdaySTh": 1 if (starttime.weekday() < 4 or starttime.weekday()==6) else 0,
             "hour": starttime.hour,
-            "quarter": int(np.floor(starttime.minute/15.)),
+            "quarter": int(np.floor(starttime.minute/15.))+1,
             "duration_seconds": (endtime-starttime).seconds,
         }
 
@@ -71,7 +75,7 @@ def get_timestamps(prevtime,curtime,row=None,precision=60):
 
     return pd.DataFrame(outtime)
 
-def extract_usage(filename,precision=3600,recode=None):
+def extract_usage(filename,precision=3600):
     '''
     function to extract usage from a filename.  Precision in seconds.
     '''
@@ -81,8 +85,12 @@ def extract_usage(filename,precision=3600,recode=None):
             'date',
             'start_timestamp',
             'end_timestamp',
-            'day', # note: starts on Monday !
-            'weekday',
+            'starttime',
+            'endtime',
+            'day', # note: starts on Sunday !
+            'weekdayMF',
+            'weekdayMTh',
+            'weekdaySTh',
             'hour',
             'quarter',
             'duration_seconds']
@@ -123,11 +131,6 @@ def extract_usage(filename,precision=3600,recode=None):
 
     if len(alldata)>0:
         alldata = alldata.sort_values(by=['start_timestamp','end_timestamp']).reset_index(drop=True)
-        if isinstance(recode,pd.DataFrame):
-             newcols = alldata.apply(lambda x: utils.recode(x,recode),axis=1)
-             alldata[recode.columns] = newcols
-             cols = cols+list(recode.columns)
-
         return alldata[cols].reset_index(drop=True)
 
 
@@ -142,6 +145,7 @@ def check_overlap_add_sessions(data, session_def = 5*60):
     for sess in session_def:
         data['new_engage_%is'%int(sess)] = False
 
+    data['switch_app'] = 0
     # loop over dataset:
     # - prevent overlap (with warning)
     # - check if a new session is started
@@ -149,8 +153,10 @@ def check_overlap_add_sessions(data, session_def = 5*60):
         if idx == 0:
             continue
 
-        # check overlap
+        # check time between previous and this app usage
         nousetime = row['start_timestamp']-data['end_timestamp'].iloc[idx-1]
+
+        # check overlap
         if nousetime < timedelta(microseconds=0):
             utils.logger("WARNING: Overlapping usage for participant %s: %s was open since %s when %s was openened on %s. \
             Manually closing %s..."%(
@@ -163,28 +169,28 @@ def check_overlap_add_sessions(data, session_def = 5*60):
             ))
             data.at[idx-1,'end_timestamp'] = row['start_timestamp']
             data.at[idx-1,'duration_seconds'] = (data.at[idx-1,'end_timestamp']-data.at[idx-1,'start_timestamp']).seconds
+
         # check sessions
         else:
             for sess in session_def:
                 if nousetime > timedelta(seconds = sess):
                     data.at[idx, 'new_engage_%is'%int(sess)] = True
 
+        # check appswitch
+        data.at[idx,'switch_app'] = (row['app_fullname']==data['app_fullname'].iloc[idx-1])*1
     return data.reset_index(drop=True)
 
-def preprocess(infolder,outfolder,recodefile=None,precision=3600,sessioninterval = 5*60):
+def preprocess(infolder,outfolder,precision=3600,sessioninterval = 5*60):
 
     if not os.path.exists(outfolder):
         os.mkdir(outfolder)
-    if isinstance(recodefile,str):
-        recode = pd.read_csv(recodefile,index_col='fullname')
-    else:
-        recode = None
 
     for filename in [x for x in os.listdir(infolder) if x.startswith("Chronicle")]:
         utils.logger("LOG: Preprocessing file %s..."%filename,level=1)
-        tmp = extract_usage(os.path.join(infolder,filename),precision=precision,recode=recode)
+        tmp = extract_usage(os.path.join(infolder,filename),precision=precision)
         if not isinstance(tmp,pd.DataFrame):
             utils.logger("WARNING: File %s does not seem to contain relevant data.  Skipping..."%filename)
             continue
         data = check_overlap_add_sessions(tmp,session_def=sessioninterval)
-        data.to_csv(os.path.join(outfolder,filename),index=False)
+        outfilename = filename.replace('.csv','_preprocessed.csv')
+        data.to_csv(os.path.join(outfolder,outfilename),index=False)
