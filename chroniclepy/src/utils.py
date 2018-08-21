@@ -10,8 +10,6 @@ def get_dt(row):
     '''
     This function transforms the reported (string) datetime to a timestamp.
     A few notes:
-    - THIS DOES NOT TAKE INTO ACCOUNT TIMEZONE ! This is for a previous version of
-      chronicle that didn't save time zone information yet.
     - Time is rounded to 10 milliseconds, to make sure the apps are in the right order.
       A potential downside of this is that when a person closes and re-opens an app
       within 10 milliseconds, it will be regarded as closed.
