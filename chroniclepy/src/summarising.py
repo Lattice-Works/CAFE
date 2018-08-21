@@ -1,19 +1,13 @@
+from chroniclepy import utils, summarise_person
 from datetime import datetime, timedelta
 from collections import Counter
 from pytz import timezone
-from chroniclepy import utils, summarise_person
 import pandas as pd
 import numpy as np
 import os
 import re
 
 def summary(infolder, outfolder, includestartend=False, recodefile=None):
-
-    if isinstance(recodefile,str):
-        recode = pd.read_csv(recodefile,index_col='fullname')
-        newcols = alldata.apply(lambda x: utils.recode(x,),axis=1)
-        alldata[recode.columns] = newcols
-        cols = cols+list(recode.columns)
 
     if not os.path.exists(outfolder):
         os.mkdir(outfolder)
@@ -25,6 +19,12 @@ def summary(infolder, outfolder, includestartend=False, recodefile=None):
         utils.logger("LOG: Summarising file %s..."%filenm,level=1)
         personid = "-".join(str(filenm).split(".")[-2].split("-")[1:])
         preprocessed = pd.read_csv(os.path.join(infolder,filenm), index_col=0, parse_dates = ['start_timestamp','end_timestamp'])
+
+        if isinstance(recodefile,str):
+            recode = pd.read_csv(recodefile,index_col='app_name')
+            newcols = preprocessed.apply(lambda x: utils.recode(x,recode),axis=1)
+            preprocessed[recode.columns] = newcols
+
         if not includestartend:
             preprocessed = preprocessed[
                 (preprocessed['start_timestamp'].dt.date!= min(preprocessed['start_timestamp']).date()) & \
