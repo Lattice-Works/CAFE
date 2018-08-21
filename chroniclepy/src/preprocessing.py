@@ -177,7 +177,7 @@ def check_overlap_add_sessions(data, session_def = 5*60):
                     data.at[idx, 'new_engage_%is'%int(sess)] = True
 
         # check appswitch
-        data.at[idx,'switch_app'] = (row['app_fullname']==data['app_fullname'].iloc[idx-1])*1
+        data.at[idx,'switch_app'] = 1-(row['app_fullname']==data['app_fullname'].iloc[idx-1])*1
     return data.reset_index(drop=True)
 
 def preprocess(infolder,outfolder,precision=3600,sessioninterval = 5*60):
