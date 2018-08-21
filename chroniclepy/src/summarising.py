@@ -7,7 +7,14 @@ import numpy as np
 import os
 import re
 
-def summary(infolder, outfolder, includestartend=False):
+def summary(infolder, outfolder, includestartend=False, recodefile=None):
+
+    if isinstance(recodefile,str):
+        recode = pd.read_csv(recodefile,index_col='fullname')
+        newcols = alldata.apply(lambda x: utils.recode(x,),axis=1)
+        alldata[recode.columns] = newcols
+        cols = cols+list(recode.columns)
+
     if not os.path.exists(outfolder):
         os.mkdir(outfolder)
 
