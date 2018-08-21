@@ -3,17 +3,7 @@ import numpy as np
 import os
 import re
 
-
-def summarise_daily(preprocessed):
-    preprocessed.index = range(len(preprocessed))
-
-    stdcols = ['participant_id', 'app_fullname', 'date', 'start_timestamp',
-           'end_timestamp', 'day', 'hour', 'quarter',
-           'duration_seconds', 'weekdayMTh', 'weekdaySTh', 'weekdayMF', 'switch_app',
-           'endtime', 'starttime']
-
-    sescols = [x for x in preprocessed.columns if x.startswith('engage')]
-
+def summarise_d(preprocessed):
     # simple daily aggregate functions
 
     dailyfunctions = {
@@ -38,6 +28,10 @@ def summarise_daily(preprocessed):
             newrow = pd.Series({k:0 for k in daily.columns}, name=date)
             daily = daily.append(newrow)
 
+    return daily
+
+def summarise_hourly(preprocessed,datelist):
+
     # hourly daily aggregate functions
     hourlyfunctions = {
         "duration_seconds": {
@@ -52,6 +46,7 @@ def summarise_daily(preprocessed):
     hourly.columns = hourly.columns.droplevel(0)
     hourly['dur'] = hourly['dur']/60.
 
+
     for date in datelist:
         datestr = date.strftime("%Y-%m-%d")
         for hour in range(24):
@@ -64,8 +59,9 @@ def summarise_daily(preprocessed):
     hourly.columns = ["hourly_%s_h%i"%(x[0],int(x[1])) for x in hourly.columns.values]
     hourly.index = pd.to_datetime(hourly.index)
 
-    daily = pd.merge(daily,hourly, on='date')
+    return hourly
 
+def summarise_quarterly(preprocessed,datelist):
     # quarterly daily aggregate functions
     quarterlyfunctions = {
         "duration_seconds": {
@@ -92,8 +88,10 @@ def summarise_daily(preprocessed):
     quarterly = quarterly.unstack('hour').unstack('quarter')
     quarterly.columns = ["quarterly_%s_h%i_q%i"%(x[0],int(x[1]),int(x[2])) for x in quarterly.columns.values]
     quarterly.index = pd.to_datetime(quarterly.index)
+    return quarterly
 
-    daily = pd.merge(daily,quarterly, on='date')
+def summarise_sessions(preprocessed):
+    sescols = [x for x in preprocessed.columns if x.startswith('engage')]
 
     # session durations
     for sescol in sescols:
@@ -113,27 +111,60 @@ def summarise_daily(preprocessed):
     sessions.columns = ["engage%s"%ses.split("_")[1] for ses in sescols]
     sessions.index = pd.to_datetime(sessions.index)
 
-    daily = pd.merge(daily,sessions, on='date')
+    return sessions, sescols
 
+def summarise_recodes(preprocessed,ignorecols):
     # recoded functions
 
-    addedcols = list(set(preprocessed.columns) - set(stdcols) - set(sescols))
+    addedcols = list(set(preprocessed.columns) - set(ignorecols))
+    custom = pd.DataFrame({})
 
     for addedcol in addedcols:
         preprocessed[addedcol] = preprocessed[addedcol].fillna("NA")
         customgrouped = preprocessed[['date',addedcol,'duration_seconds']].groupby(['date',addedcol]).agg(sum).unstack(addedcol)
         customgrouped.columns = ["custom_%s_%s"%(addedcol,x) for x in customgrouped.columns.droplevel(0)]
         customgrouped.index = pd.to_datetime(customgrouped.index)
-        daily = pd.merge(daily,customgrouped, on='date')
+        if len(custom)==0:
+            custom = customgrouped
+        else:
+            custom = pd.merge(custom,customgrouped, on='date')
 
         #hourly
         customgrouped = preprocessed[['date',addedcol,'duration_seconds','hour']].groupby(['date',addedcol,'hour']).agg(sum).unstack([addedcol,'hour'])
-        customgrouped.columns = ["custom_hourly_%s_%s_%s"%(addedcol,x[1],"h%s"%x[2]) for x in customgrouped.columns]
+        customgrouped.columns = ["custom_hourly_%s_%s_%s"%(addedcol,x[1],"h%s"%int(x[2])) for x in customgrouped.columns]
         customgrouped.index = pd.to_datetime(customgrouped.index)
-        daily = pd.merge(daily,customgrouped, on='date')
+        custom = pd.merge(custom,customgrouped, on='date')
+
+        #quarterly
+        customgrouped = preprocessed[['date',addedcol,'duration_seconds','hour','quarter']].groupby(['date',addedcol,'hour','quarter']).agg(sum).unstack([addedcol,'hour','quarter'])
+        customgrouped.columns = ["custom_hourly_%s_%s_%s_%s"%(addedcol,x[1],"h%i"%int(x[2]),"q%i"%int(x[3])) for x in customgrouped.columns]
+        customgrouped.index = pd.to_datetime(customgrouped.index)
+        custom = pd.merge(custom,customgrouped, on='date')
+
+    return custom
+
+
+def summarise_daily(preprocessed):
+
+    stdcols = ['participant_id', 'app_fullname', 'date', 'start_timestamp',
+           'end_timestamp', 'day', 'hour', 'quarter',
+           'duration_seconds', 'weekdayMTh', 'weekdaySTh', 'weekdayMF', 'switch_app',
+           'endtime', 'starttime']
+
+    preprocessed.index = range(len(preprocessed))
+
+    daily = summarise_d(preprocessed)
+    datelist = pd.date_range(start = np.min(daily.index), end = np.max(daily.index), freq='D')
+    hourly = summarise_hourly(preprocessed,datelist)
+    daily = pd.merge(daily,hourly, on='date')
+    quarterly = summarise_quarterly(preprocessed,datelist)
+    daily = pd.merge(daily,quarterly, on='date')
+    sessions, sescols = summarise_sessions(preprocessed)
+    daily = pd.merge(daily,sessions, on='date')
+    custom = summarise_recodes(preprocessed,set(stdcols).union(set(sescols)))
+    daily = pd.merge(daily,custom, on='date')
 
     # get appsperminute
-
     appcnts = [x for x in daily.columns if 'appcnt' in x]
     for col in appcnts:
         daily[col.replace("appcnt","switchpermin")] = daily[col]/daily[col.replace("appcnt","dur")]
