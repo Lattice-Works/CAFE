@@ -151,7 +151,8 @@ def check_overlap_add_sessions(data, session_def = 5*60):
     # - check if a new session is started
     for idx,row in data.iterrows():
         if idx == 0:
-            continue
+            for sess in session_def:
+                data.at[idx, 'new_engage_%is'%int(sess)] = True
 
         # check time between previous and this app usage
         nousetime = row['start_timestamp']-data['end_timestamp'].iloc[idx-1]
