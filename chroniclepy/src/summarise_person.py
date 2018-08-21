@@ -12,7 +12,7 @@ def summarise_daily(preprocessed):
            'duration_seconds', 'weekdayMTh', 'weekdaySTh', 'weekdayMF', 'switch_app',
            'endtime', 'starttime']
 
-    sescols = [x for x in preprocessed.columns if x.startswith('new_engage')]
+    sescols = [x for x in preprocessed.columns if x.startswith('engage')]
 
     # simple daily aggregate functions
 
