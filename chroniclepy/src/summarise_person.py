@@ -5,6 +5,8 @@ import re
 
 
 def summarise_daily(preprocessed):
+    preprocessed.index = range(len(preprocessed))
+
     stdcols = ['participant_id', 'app_fullname', 'date', 'start_timestamp',
            'end_timestamp', 'day', 'hour', 'quarter',
            'duration_seconds', 'weekdayMTh', 'weekdaySTh', 'weekdayMF', 'switch_app',
@@ -16,7 +18,7 @@ def summarise_daily(preprocessed):
 
     dailyfunctions = {
         "duration_seconds": {
-            "duration": 'sum'
+            "dur": 'sum'
             },
         "switch_app": {
             "appcnt": 'sum'
@@ -25,7 +27,7 @@ def summarise_daily(preprocessed):
 
     daily = preprocessed.groupby('date').agg(dailyfunctions)
     daily.columns = daily.columns.droplevel(0)
-    daily['duration'] = daily['duration']/60.
+    daily['dur'] = daily['dur']/60.
     daily.index = pd.to_datetime(daily.index)
 
     # fill days of no usage
@@ -40,7 +42,7 @@ def summarise_daily(preprocessed):
 
     hourlyfunctions = {
         "duration_seconds": {
-            "duration": 'sum'
+            "dur": 'sum'
         },
         'switch_app': {
             "appcnt": "sum"
@@ -49,7 +51,7 @@ def summarise_daily(preprocessed):
 
     hourly = preprocessed.groupby(['date','hour']).agg(hourlyfunctions)
     hourly.columns = hourly.columns.droplevel(0)
-    hourly['duration'] = hourly['duration']/60.
+    hourly['dur'] = hourly['dur']/60.
 
     for date in datelist:
         datestr = date.strftime("%Y-%m-%d")
@@ -65,13 +67,24 @@ def summarise_daily(preprocessed):
 
     daily = pd.merge(daily,hourly, on='date')
 
+    # session durations
+
+    for sescol in sescols:
+        newcol = '%sdur'%sescol
+        sesids = np.where(preprocessed[sescol]==1)[0][1:]
+        starttimes = np.array(preprocessed.start_timestamp.loc[np.append([0],sesids)][:-1])
+        endtimes = np.array(preprocessed.end_timestamp.loc[sesids-1])
+        durs = (endtimes-starttimes)/ np.timedelta64(1, 'm')
+        preprocessed.at[(sesids-1),newcol] = durs
+    # preprocessed[['starttime','endtime',sescol,newcol]]
+
     # sessions
-
     sesfunctions = {k: 'sum' for k in sescols}
-
+    sesfunctions.update({"%sdur"%k: 'mean' for k in sescols})
     sessions = preprocessed.groupby(['date']).agg(sesfunctions)
-    sessions.columns = ["engage_%s"%ses.split("_")[2] for ses in (sessions.columns)]
-    sessions = sessions.astype('int')
+    sessions[sescols] = sessions[sescols].astype('int')
+    sescols = sesfunctions.keys()
+    sessions.columns = ["engage_%s"%ses.split("_")[2] for ses in sescols]
     sessions.index = pd.to_datetime(sessions.index)
 
     daily = pd.merge(daily,sessions, on='date')
@@ -97,7 +110,7 @@ def summarise_daily(preprocessed):
 
     appcnts = [x for x in daily.columns if 'appcnt' in x]
     for col in appcnts:
-        daily[col.replace("appcnt","appswitching_per_minute")] = daily[col]/daily[col.replace("appcnt","duration")]
+        daily[col.replace("appcnt","switchpermin")] = daily[col]/daily[col.replace("appcnt","dur")]
     daily = daily.drop(appcnts,axis=1)
 
     return daily
