@@ -84,18 +84,20 @@ def summarise_daily(preprocessed):
         preprocessed[addedcol] = preprocessed[addedcol].fillna("notcoded")
         customgrouped = preprocessed[['date',addedcol,'duration_seconds']].groupby(['date',addedcol]).agg(sum).unstack(addedcol)
         customgrouped.columns = ["custom_%s_%s"%(addedcol,x) for x in customgrouped.columns.droplevel(0)]
+        customgrouped.index = pd.to_datetime(customgrouped.index)
         daily = pd.merge(daily,customgrouped, on='date')
 
         #hourly
         customgrouped = preprocessed[['date',addedcol,'duration_seconds','hour']].groupby(['date',addedcol,'hour']).agg(sum).unstack([addedcol,'hour'])
         customgrouped.columns = ["custom_hourly_%s_%s_%s"%(addedcol,x[1],"h%s"%x[2]) for x in customgrouped.columns]
+        customgrouped.index = pd.to_datetime(customgrouped.index)
         daily = pd.merge(daily,customgrouped, on='date')
 
     # get appsperminute
 
     appcnts = [x for x in daily.columns if 'appcnt' in x]
     for col in appcnts:
-        daily[col.replace("appcnt","appswitching_per_minute")] = daily[col]/daily[col.replace("appcnt","duration")]*60.
+        daily[col.replace("appcnt","appswitching_per_minute")] = daily[col]/daily[col.replace("appcnt","duration")]
     daily = daily.drop(appcnts,axis=1)
 
     return daily
