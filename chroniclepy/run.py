@@ -47,9 +47,9 @@ def main():
     if opts.stage=='summary' or opts.stage=='all':
         summarising.summary(
             infolder = opts.preproc_dir,
-            recodefile = opts.recodefile,
             outfolder = opts.output_dir,
-            includestartend = opts.includestartend
+            includestartend = opts.includestartend,
+            recodefile = opts.recodefile
         )
 
 if __name__ == '__main__':
