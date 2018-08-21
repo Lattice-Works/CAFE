@@ -18,13 +18,23 @@ def summarise_daily(preprocessed):
         "duration_seconds": {
             "duration": 'sum'
             },
-        "app_fullname": {
-            "appcnt": 'count'
+        "switch_app": {
+            "appcnt": 'sum'
         }
     }
 
     daily = preprocessed.groupby('date').agg(dailyfunctions)
     daily.columns = daily.columns.droplevel(0)
+    daily['duration'] = daily['duration']/60.
+    daily.index = pd.to_datetime(daily.index)
+
+    # fill days of no usage
+
+    datelist = pd.date_range(start = np.min(daily.index), end = np.max(daily.index), freq='D')
+    for date in datelist:
+        if not date in daily.index:
+            newrow = pd.Series({k:0 for k in daily.columns}, name=date)
+            daily = daily.append(newrow)
 
     # hourly daily aggregate functions
 
@@ -37,8 +47,21 @@ def summarise_daily(preprocessed):
         }
     }
 
-    hourly = preprocessed.groupby(['date','hour']).agg(hourlyfunctions).unstack('hour')
-    hourly.columns = ["hourly_%s_h%s"%(x[1],x[2]) for x in hourly.columns.values]
+    hourly = preprocessed.groupby(['date','hour']).agg(hourlyfunctions)
+    hourly.columns = hourly.columns.droplevel(0)
+    hourly['duration'] = hourly['duration']/60.
+
+    for date in datelist:
+        datestr = date.strftime("%Y-%m-%d")
+        for hour in range(24):
+            multind = (datestr,hour)
+            if not multind in hourly.index:
+                newrow = pd.Series({k:0 for k in hourly.columns}, name=multind)
+                hourly = hourly.append(newrow)
+
+    hourly = hourly.unstack('hour')
+    hourly.columns = ["hourly_%s_h%s"%(x[0],x[1]) for x in hourly.columns.values]
+    hourly.index = pd.to_datetime(hourly.index)
 
     daily = pd.merge(daily,hourly, on='date')
 
@@ -48,6 +71,8 @@ def summarise_daily(preprocessed):
 
     sessions = preprocessed.groupby(['date']).agg(sesfunctions)
     sessions.columns = ["engage_%s"%ses.split("_")[2] for ses in (sessions.columns)]
+    sessions = sessions.astype('int')
+    sessions.index = pd.to_datetime(sessions.index)
 
     daily = pd.merge(daily,sessions, on='date')
 
