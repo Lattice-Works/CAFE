@@ -36,6 +36,7 @@ def summary(infolder, outfolder, includestartend=False, recodefile=None):
 
     summary = alldata.groupby('participant_id').agg(['mean','std'])
     summary.columns = ["%s_%s"%(x[0],x[1]) for x in summary.columns]
+    summary['numberofdays'] = alldata[['duration','participant_id']].groupby('participant_id').agg(['count'])
 
     customcols = [x for x in summary.columns if x.startswith("custom")]
     hourlycols = [x for x in summary.columns if x.startswith("hourly")]
