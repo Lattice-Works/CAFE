@@ -43,7 +43,7 @@ def summarise_daily(preprocessed):
 
     # sessions
 
-    sesfunctions = {k: 'count' for k in sescols}
+    sesfunctions = {k: 'sum' for k in sescols}
 
     sessions = preprocessed.groupby(['date']).agg(sesfunctions)
     sessions.columns = ["engage_%s"%ses.split("_")[2] for ses in (sessions.columns)]
