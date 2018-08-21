@@ -143,7 +143,7 @@ def check_overlap_add_sessions(data, session_def = 5*60):
 
     # initiate session column(s)
     for sess in session_def:
-        data['new_engage_%is'%int(sess)] = False
+        data['engage_%is'%int(sess)] = False
 
     data['switch_app'] = 0
     # loop over dataset:
@@ -152,7 +152,7 @@ def check_overlap_add_sessions(data, session_def = 5*60):
     for idx,row in data.iterrows():
         if idx == 0:
             for sess in session_def:
-                data.at[idx, 'new_engage_%is'%int(sess)] = True
+                data.at[idx, 'engage_%is'%int(sess)] = True
 
         # check time between previous and this app usage
         nousetime = row['start_timestamp']-data['end_timestamp'].iloc[idx-1]
@@ -175,7 +175,7 @@ def check_overlap_add_sessions(data, session_def = 5*60):
         else:
             for sess in session_def:
                 if nousetime > timedelta(seconds = sess):
-                    data.at[idx, 'new_engage_%is'%int(sess)] = True
+                    data.at[idx, 'engage_%is'%int(sess)] = True
 
         # check appswitch
         data.at[idx,'switch_app'] = 1-(row['app_fullname']==data['app_fullname'].iloc[idx-1])*1
