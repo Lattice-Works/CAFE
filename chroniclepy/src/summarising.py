@@ -20,8 +20,8 @@ def summary(infolder, outfolder, includestartend=False):
         preprocessed = pd.read_csv(os.path.join(infolder,filenm), index_col=0, parse_dates = ['start_timestamp','end_timestamp'])
         if not includestartend:
             preprocessed = preprocessed[
-                (preprocessed['start_timestamp']!= min(preprocessed['start_timestamp'])) & \
-                (preprocessed['start_timestamp']!= max(preprocessed['start_timestamp']))]
+                (preprocessed['start_timestamp'].dt.date!= min(preprocessed['start_timestamp']).date()) & \
+                (preprocessed['start_timestamp'].dt.date!= max(preprocessed['start_timestamp']).date())]
         daily = summarise_person.summarise_daily(preprocessed)
         daily['participant_id'] = personid
         daily = daily.fillna(0)
