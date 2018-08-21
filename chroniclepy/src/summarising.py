@@ -21,7 +21,7 @@ def summary(infolder, outfolder, includestartend=False, recodefile=None):
         preprocessed = pd.read_csv(os.path.join(infolder,filenm), index_col=0, parse_dates = ['start_timestamp','end_timestamp'])
 
         if isinstance(recodefile,str):
-            recode = pd.read_csv(recodefile,index_col='app_name')
+            recode = pd.read_csv(recodefile,index_col='full_name').astype(str)
             newcols = preprocessed.apply(lambda x: utils.recode(x,recode),axis=1)
             preprocessed[recode.columns] = newcols
 
