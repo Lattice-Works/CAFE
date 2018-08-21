@@ -6,8 +6,9 @@ import re
 
 def summarise_daily(preprocessed):
     stdcols = ['participant_id', 'app_fullname', 'date', 'start_timestamp',
-           'end_timestamp', 'day', 'weekday', 'hour', 'quarter',
-           'duration_seconds']
+           'end_timestamp', 'day', 'hour', 'quarter',
+           'duration_seconds', 'weekdayMTh', 'weekdaySTh', 'weekdayMF', 'switch_app',
+           'endtime', 'starttime']
 
     sescols = [x for x in preprocessed.columns if x.startswith('new_engage')]
 
@@ -31,8 +32,8 @@ def summarise_daily(preprocessed):
         "duration_seconds": {
             "duration": 'sum'
         },
-        'app_fullname': {
-            "appcnt": "count"
+        'switch_app': {
+            "appcnt": "sum"
         }
     }
 
