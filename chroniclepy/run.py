@@ -17,9 +17,6 @@ def get_parser():
 
 
     prepargs = parser.add_argument_group('Options for preprocessing the data.')
-    prepargs.add_argument('--recodefile',action='store', default=None,
-        help = 'a csv file with one column named "fullname" \
-            with transformations of the apps (eg. category codes, other names,...)')
     prepargs.add_argument('--precision',action='store',type=int, default = 3600,
         help = 'the precision in seconds for the output file. This defines the time \
             unit of the data.  Eg. if the data should be split up by the hour, use 3600.')
@@ -29,6 +26,9 @@ def get_parser():
             a new session.')
 
     summaryargs = parser.add_argument_group('Options for summarising the data.')
+    summaryargs.add_argument('--recodefile',action='store', default=None,
+        help = 'a csv file with one column named "fullname" \
+        with transformations of the apps (eg. category codes, other names,...)')
     summaryargs.add_argument('--includestartend', action='store_true', default=False,
         help = 'flag to include the first and last day in the summary table.')
     return parser
@@ -40,7 +40,6 @@ def main():
         preprocessing.preprocess(
             infolder = opts.input_dir,
             outfolder = opts.preproc_dir,
-            recodefile = opts.recodefile,
             precision = opts.precision,
             sessioninterval = [int(x) for x in opts.sessioninterval]
             )
@@ -48,6 +47,7 @@ def main():
     if opts.stage=='summary' or opts.stage=='all':
         summarising.summary(
             infolder = opts.preproc_dir,
+            recodefile = opts.recodefile,
             outfolder = opts.output_dir,
             includestartend = opts.includestartend
         )
