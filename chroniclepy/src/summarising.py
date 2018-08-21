@@ -42,6 +42,6 @@ def summary(infolder, outfolder, includestartend=False, recodefile=None):
     othercols = [x for x in summary.columns if not (x.startswith("hourly") or x.startswith("custom"))]
 
     # note participant_id is the index, so doesn't have to be written explicitly
-    summary[customcols].to_csv(os.path.join(outfolder,'summary_daily_custom.csv'))
+    summary[customcols].to_csv(os.path.join(outfolder,'summary_daily_appcoding.csv'))
     summary[hourlycols].to_csv(os.path.join(outfolder,'summary_daily_hourly.csv'))
     summary[othercols].to_csv(os.path.join(outfolder,'summary_daily.csv'))
