@@ -7,7 +7,7 @@ import numpy as np
 import os
 import re
 
-def summary(infolder, outfolder, includestartend=False, recodefile=None, quarterly = False):
+def summary(infolder, outfolder, includestartend=False, recodefile=None, quarterly = False, splitweek = True, weekdefinition = 'weekdayMF'):
 
     if not os.path.exists(outfolder):
         os.mkdir(outfolder)
@@ -27,7 +27,7 @@ def summary(infolder, outfolder, includestartend=False, recodefile=None, quarter
             preprocessed = preprocessed[
                 (preprocessed['start_timestamp'].dt.date!= min(preprocessed['start_timestamp']).date()) & \
                 (preprocessed['start_timestamp'].dt.date!= max(preprocessed['start_timestamp']).date())]
-        daily = summarise_person.summarise_daily(preprocessed,quarterly = True)
+        daily = summarise_person.summarise_daily(preprocessed,quarterly = quarterly, splitweek = splitweek, weekdefinition = weekdefinition)
         daily['participant_id'] = personid
         daily = daily.fillna(0)
         alldata = pd.concat([alldata,daily])
@@ -39,7 +39,8 @@ def summary(infolder, outfolder, includestartend=False, recodefile=None, quarter
     customcols = [x for x in summary.columns if x.startswith("custom") and not 'hourly' in x and not 'quarterly' in x]
     hourlycols = [x for x in summary.columns if 'hourly' in x]
     quarterlycols = [x for x in summary.columns if 'quarterly' in x]
-    othercols = [x for x in summary.columns if not (x.startswith("hourly") or x.startswith("custom") or x.startswith("quarterly"))]
+    weeklycols = [x for x in summary.columns if 'week' in x]
+    othercols = [x for x in summary.columns if not (x.startswith("hourly") or x.startswith("custom") or x.startswith("week") or x.startswith("quarterly"))]
 
     # # rename columns
     daily = summary[othercols+customcols] \
@@ -53,10 +54,17 @@ def summary(infolder, outfolder, includestartend=False, recodefile=None, quarter
         .drop([x for x in quarterlycols if x.endswith('std')],axis=1) \
         .rename(columns = {k:k.replace("custom_","").replace("quarterly_","") for k in quarterlycols})
 
+    weekly = summary[weeklycols] \
+        .rename(columns = {k:k.replace("week","wk").replace("wkend","wknd") for k in weeklycols})
+
     custom = summary[customcols] \
         .rename(columns = {k:k.replace("custom_","") for k in customcols})
 
     daily.to_csv(os.path.join(outfolder,'summary_daily.csv'))
     hourly.to_csv(os.path.join(outfolder,'summary_hourly.csv'))
     quarterly.to_csv(os.path.join(outfolder,'summary_quarterly.csv'))
+    weekly.to_csv(os.path.join(outfolder,'summary_splitweek.csv'))
     custom.to_csv(os.path.join(outfolder,'summary_appcoding.csv'))
+
+# cols = list(daily.columns)+list(quarterly.columns)+list(hourly.columns)+list(custom.columns)+list(weekly.columns)
+# np.max([len(x) for x in cols])

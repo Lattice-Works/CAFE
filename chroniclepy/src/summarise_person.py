@@ -1,4 +1,5 @@
 from collections import Counter
+from chroniclepy import utils
 import pandas as pd
 import numpy as np
 import os
@@ -172,7 +173,13 @@ def summarise_recodes(preprocessed,ignorecols,datelist,quarterly=False):
     return custom
 
 
-def summarise_daily(preprocessed,quarterly=False):
+def summarise_daily(preprocessed,quarterly=False, splitweek = True, weekdefinition = 'weekdayMF'):
+
+    # set index
+    personID = Counter(preprocessed.index).most_common(1)[0][0]
+    preprocessed.index = range(len(preprocessed))
+
+    # split columns and get recode columns
     stdcols = ['participant_id', 'app_fullname', 'date', 'start_timestamp',
            'end_timestamp', 'day', 'hour', 'quarter',
            'duration_seconds', 'weekdayMTh', 'weekdaySTh', 'weekdayMF', 'switch_app',
@@ -180,7 +187,12 @@ def summarise_daily(preprocessed,quarterly=False):
     engagecols = [x for x in preprocessed.columns if x.startswith('engage')]
     noncustom = set(stdcols).union(set(engagecols))
 
-    preprocessed.index = range(len(preprocessed))
+    # check splitweek settings
+    if isinstance(weekdefinition,str):
+        if weekdefinition not in ['weekdayMTh', 'weekdaySTh', 'weekdayMF']:
+            raise ValueError("Unknown weekday definition !")
+    if splitweek and not isinstance(weekdefinition,str):
+        raise ValueError("Please specify the weekdefinition if you want  !")
 
     daily = summarise_d(preprocessed)
     datelist = pd.date_range(start = np.min(daily.index), end = np.max(daily.index), freq='D')
@@ -194,6 +206,20 @@ def summarise_daily(preprocessed,quarterly=False):
         quarterly = summarise_quarterly(preprocessed,datelist,engagecols)
         print(len(quarterly.columns))
         daily = pd.merge(daily,quarterly, on='date')
+
+    if splitweek:
+        if np.sum(preprocessed[weekdefinition]==1)==0:
+            utils.logger("WARNING: No weekday data for %s..."%personID,level=1)
+        else:
+            week = summarise_d(preprocessed[preprocessed[weekdefinition]==1])
+            week.columns = ['week_%s'%x for x in week.columns]
+            daily = pd.merge(daily,week, on='date')
+        if np.sum(preprocessed[weekdefinition]==0)==0:
+            utils.logger("WARNING: No weekend data for %s..."%personID,level=1)
+        else:
+            weekend = summarise_d(preprocessed[preprocessed[weekdefinition]==0])
+            weekend.columns = ['weekend_%s'%x for x in weekend.columns]
+            daily = pd.merge(daily,weekend, on='date')
 
     sessions = summarise_sessions(preprocessed)
     daily = pd.merge(daily,sessions, on='date')
