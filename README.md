@@ -69,7 +69,7 @@ An example statement for the example data with all custom arguments:
       all \
       $FOLDER/rawdata \
       $FOLDER/preprocessed \
-      $FOLDER/output
+      $FOLDER/output \
       --recodefile=$FOLDER/categorisation.csv \
       --precision=630 \
       --sessioninterval=300 --sessioninterval=3600 \
