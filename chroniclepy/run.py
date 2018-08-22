@@ -33,6 +33,11 @@ def get_parser():
         help = 'flag to include the first and last day in the summary table.')
     summaryargs.add_argument('--quarterly', action='store_true', default=False,
         help = 'flag to export quarterly summary statistics.')
+    summaryargs.add_argument('--splitweek', action='store_true', default=False,
+        help = 'flag to export summary statistics separately for week and weekend days.')
+    summaryargs.add_argument('--weekdefinition', action='store', default='weekdayMF',
+        help = 'One of "weekdayMF", "weekdayMTh", "weekdaySTh" to distinguish week and weekend\
+        (only when using --splitweek flag)')
     return parser
 
 def main():
@@ -55,7 +60,9 @@ def main():
             outfolder = opts.output_dir,
             includestartend = opts.includestartend,
             recodefile = opts.recodefile,
-            quarterly = opts.quarterly
+            quarterly = opts.quarterly,
+            splitweek = opts.splitweek,
+            weekdefinition = opts.weekdefinition
         )
 
 # opts = get_parser().parse_args()
@@ -63,7 +70,9 @@ def main():
 # outfolder = opts.output_dir
 # includestartend = opts.includestartend
 # recodefile = opts.recodefile
-#
+# quarterly = opts.quarterly
+# splitweek = True
+# weekdefinition = 'weekdayMF'
 
 if __name__ == '__main__':
     main()
