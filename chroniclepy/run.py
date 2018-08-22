@@ -31,6 +31,8 @@ def get_parser():
         with transformations of the apps (eg. category codes, other names,...)')
     summaryargs.add_argument('--includestartend', action='store_true', default=False,
         help = 'flag to include the first and last day in the summary table.')
+    summaryargs.add_argument('--quarterly', action='store_true', default=False,
+        help = 'flag to export quarterly summary statistics.')
     return parser
 
 def main():
@@ -45,12 +47,23 @@ def main():
             )
 
     if opts.stage=='summary' or opts.stage=='all':
+        if opts.precision > 15*60:
+            raise ValueError("The precision is above a quarter and the minimum precision for summary is by quarter.")
+
         summarising.summary(
             infolder = opts.preproc_dir,
             outfolder = opts.output_dir,
             includestartend = opts.includestartend,
-            recodefile = opts.recodefile
+            recodefile = opts.recodefile,
+            quarterly = opts.quarterly
         )
+
+# opts = get_parser().parse_args()
+# infolder = opts.preproc_dir
+# outfolder = opts.output_dir
+# includestartend = opts.includestartend
+# recodefile = opts.recodefile
+#
 
 if __name__ == '__main__':
     main()
