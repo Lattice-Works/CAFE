@@ -7,64 +7,62 @@ import numpy as np
 import os
 import re
 
-def summary(infolder, outfolder, includestartend=False, recodefile=None, quarterly = False, splitweek = True, weekdefinition = 'weekdayMF'):
+def summary(infolder, outfolder, includestartend=False, recodefile=None, subsetfile=None, fullapplistfile=None, quarterly = False, splitweek = True, weekdefinition = 'weekdayMF'):
 
     if not os.path.exists(outfolder):
         os.mkdir(outfolder)
 
     files = [x for x in os.listdir(infolder) if x.startswith("Chronicle")]
 
-    alldata = pd.DataFrame({})
-    for filenm in files:
+    allapps = set()
+
+    full = {}
+    for idx,filenm in enumerate(files):
         utils.logger("LOG: Summarising file %s..."%filenm,level=1)
-        personid = "-".join(str(filenm).split(".")[-2].split("-")[1:])
-        preprocessed = pd.read_csv(os.path.join(infolder,filenm), index_col=0, parse_dates = ['start_timestamp','end_timestamp'])
-        if isinstance(recodefile,str):
-            recode = pd.read_csv(recodefile,index_col='full_name').astype(str)
-            newcols = preprocessed.apply(lambda x: utils.recode(x,recode),axis=1)
-            preprocessed[recode.columns] = newcols
-        if not includestartend:
-            preprocessed = preprocessed[
-                (preprocessed['start_timestamp'].dt.date!= min(preprocessed['start_timestamp']).date()) & \
-                (preprocessed['start_timestamp'].dt.date!= max(preprocessed['start_timestamp']).date())]
-        daily = summarise_person.summarise_daily(preprocessed,quarterly = quarterly, splitweek = splitweek, weekdefinition = weekdefinition)
-        daily['participant_id'] = personid
-        daily = daily.fillna(0)
-        alldata = pd.concat([alldata,daily])
+        preprocessed = pd.read_csv(os.path.join(infolder,filenm), parse_dates = ['start_timestamp','end_timestamp']).dropna(subset=['app_fullname'])
+        allapps = allapps.union(set(preprocessed['app_fullname']))
+        personID = "-".join(str(filenm).split(".")[-2].split("-")[1:])
+        person = summarise_person.summarise_person(
+            preprocessed,
+            personID = personID,
+            quarterly = quarterly,
+            splitweek = splitweek,
+            weekdefinition = weekdefinition,
+            subsetfile = subsetfile,
+            recodefile = recodefile,
+            includestartend = includestartend
+            )
+        for k,v in person.items():
+            if not k in full.keys():
+                full[k] = v
+            else:
+                full[k] = pd.concat([full[k],person[k]],sort=True)
 
-    summary = alldata.groupby('participant_id').agg(['mean','std'])
-    summary.columns = ["%s_%s"%(x[0],x[1]) for x in summary.columns]
-    summary['num_days'] = alldata[['dur','participant_id']].groupby('participant_id').agg(['count'])
+    aggfuncs = {
+        "daily":            ['mean','std'],
+        "week":             ['mean','std'],
+        "weekend":          ['mean','std'],
+        "appcoding_daily":  ['mean','std'],
+        'quarterly':        ['mean','std'],
+        "hourly":           ['mean'],
+        'appcoding_hourly': ['mean'],
+        'appcoding_week':   ['mean'],
+        'appcoding_weekend':['mean']
+    }
 
-    customcols = [x for x in summary.columns if x.startswith("custom") and not 'hourly' in x and not 'quarterly' in x]
-    hourlycols = [x for x in summary.columns if 'hourly' in x]
-    quarterlycols = [x for x in summary.columns if 'quarterly' in x]
-    weeklycols = [x for x in summary.columns if 'week' in x]
-    othercols = [x for x in summary.columns if not (x.startswith("hourly") or x.startswith("custom") or x.startswith("week") or x.startswith("quarterly"))]
+    # get prefix for subset for naming
+    prefix = ""
+    if isinstance(subsetfile,str):
+        subset = pd.read_csv(subsetfile,index_col='full_name').astype(str)
+        prefix = "%s_"%list(subset.columns)[0]
 
-    # # rename columns
-    daily = summary[othercols+customcols] \
-        .rename(columns = {k:k.replace("custom_","") for k in customcols})
+    # run over all datasets, summarise and save
+    for k,v in full.items():
+        summary = v.fillna(0).groupby('participant_id').agg(aggfuncs[k])
+        summary.columns = ['_'.join(col).strip() for col in summary.columns.values]
+        if k == 'daily':
+            summary['num_days'] = v[['dur','participant_id']].groupby('participant_id').agg(['count'])
+        summary.to_csv(os.path.join(outfolder,"%ssummary_%s.csv"%(prefix,k)))
 
-    hourly = summary[hourlycols] \
-        .drop([x for x in hourlycols if x.endswith('std')],axis=1) \
-        .rename(columns = {k:k.replace("custom_","").replace("hourly_","") for k in hourlycols})
-
-    quarterly = summary[quarterlycols] \
-        .drop([x for x in quarterlycols if x.endswith('std')],axis=1) \
-        .rename(columns = {k:k.replace("custom_","").replace("quarterly_","") for k in quarterlycols})
-
-    weekly = summary[weeklycols] \
-        .rename(columns = {k:k.replace("week","wk").replace("wkend","wknd") for k in weeklycols})
-
-    custom = summary[customcols] \
-        .rename(columns = {k:k.replace("custom_","") for k in customcols})
-
-    daily.to_csv(os.path.join(outfolder,'summary_daily.csv'))
-    hourly.to_csv(os.path.join(outfolder,'summary_hourly.csv'))
-    quarterly.to_csv(os.path.join(outfolder,'summary_quarterly.csv'))
-    weekly.to_csv(os.path.join(outfolder,'summary_splitweek.csv'))
-    custom.to_csv(os.path.join(outfolder,'summary_appcoding.csv'))
-
-# cols = list(daily.columns)+list(quarterly.columns)+list(hourly.columns)+list(custom.columns)+list(weekly.columns)
-# np.max([len(x) for x in cols])
+    if isinstance(fullapplistfile,str):
+        pd.DataFrame({"full_name": list(allapps)}).to_csv(fullapplistfile)
