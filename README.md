@@ -34,7 +34,6 @@ To run the data processing, run in the terminal:
 If you'd want to set a folder as an environment variable for easier readability, you could run:
 
     FOLDER=/Users/openlattice/chroniclepy/examples/
-    FOLDER=/Users/jokedurnez/Documents/projects/projectsOngoing/accounts/Data/CAFE/July30/
 
     docker run \
       -v $FOLDER:$FOLDER \
@@ -70,12 +69,12 @@ An example statement for the example data with all custom arguments:
     docker run -it \
       -v $FOLDER:$FOLDER \
       openlattice/chroniclepy \
-      summary \
+      all \
       $FOLDER/rawdata \
       $FOLDER/preprocessed \
       $FOLDER/output \
-      --recodefile=$FOLDER\categorisation_mod.csv \
-      --fullapplistfile=$FOLDER\categorisation_mod.csv \
+      --recodefile=$FOLDER\categorisation.csv \
+      --fullapplistfile=$FOLDER\applist.csv \
       --subsetfile=$FOLDER/subset.csv \
       --precision=630 \
       --sessioninterval=300 \
