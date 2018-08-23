@@ -45,3 +45,93 @@ def logger(message,level=1):
     time = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
     prefix = "༼ つ ◕_◕ ༽つ" if level==0 else "-- "
     print("%s %s: %s"%(prefix,time,message))
+
+def fill_dates(dataset,datelist):
+    '''
+    This function checks for empty days and fills them with 0's.
+    '''
+    for date in datelist:
+        if not date in dataset.index:
+            newrow = pd.Series({k:0 for k in dataset.columns}, name=date)
+            dataset = dataset.append(newrow)
+    return dataset
+
+
+def fill_hours(dataset,datelist):
+    '''
+    This function checks for empty days/hours and fills them with 0's.
+    '''
+    for date in datelist:
+        datestr = date.strftime("%Y-%m-%d")
+        for hour in range(24):
+            multind = (datestr,hour)
+            if not multind in dataset.index:
+                newrow = pd.Series({k:0 for k in dataset.columns}, name=multind)
+                dataset = dataset.append(newrow)
+    return dataset
+
+def fill_quarters(dataset,datelist):
+    '''
+    This function checks for empty days/hours/quarters and fills them with 0's.
+    '''
+    for date in datelist:
+        datestr = date.strftime("%Y-%m-%d")
+        for hour in range(24):
+            for quarter in range(1,5):
+                multind = (datestr,hour,quarter)
+                if not multind in dataset.index:
+                    newrow = pd.Series({k:0 for k in dataset.columns}, name=multind)
+                    dataset = dataset.append(newrow)
+    return dataset
+
+def fill_appcat_hourly(dataset,datelist,catlist):
+    '''
+    This function checks for empty days/hours and fills them with 0's for all categories.
+    '''
+    for date in datelist:
+        datestr = date.strftime("%Y-%m-%d")
+        for hour in range(24):
+            for cat in catlist:
+                multind = (datestr,str(cat),hour)
+                if not multind in dataset.index:
+                    newrow = pd.Series({k:0 for k in dataset.columns}, name=multind)
+                    dataset = dataset.append(newrow)
+    return dataset
+
+def fill_appcat_quarterly(dataset,datelist,catlist):
+    '''
+    This function checks for empty days/hours/quarters and fills them with 0's for all categories.
+    '''
+    for date in datelist:
+        datestr = date.strftime("%Y-%m-%d")
+        for hour in range(24):
+            for quarter in range(1,5):
+                for cat in catlist:
+                    multind = (datestr,str(cat),hour,quarter)
+                    if not multind in dataset.index:
+                        newrow = pd.Series({k:0 for k in dataset.columns}, name=multind)
+                        dataset = dataset.append(newrow)
+    return dataset
+
+def cut_first_last(dataset):
+    dataset = dataset[
+        (dataset['start_timestamp'].dt.date!= min(dataset['start_timestamp']).date()) & \
+        (dataset['start_timestamp'].dt.date!= max(dataset['start_timestamp']).date())]
+    return dataset
+
+def add_session_durations(dataset):
+    engagecols = [x for x in dataset.columns if x.startswith('engage')]
+    for sescol in engagecols:
+        newcol = '%s_dur'%sescol
+        sesids = np.where(dataset[sescol]==1)[0][1:]
+        starttimes = np.array(dataset.start_timestamp.loc[np.append([0],sesids)][:-1])
+        endtimes = np.array(dataset.end_timestamp.loc[sesids-1])
+        durs = (endtimes-starttimes)/ np.timedelta64(1, 'm')
+        dataset[newcol] = 0
+        for idx,sesid in enumerate(np.append([0],sesids)):
+            if idx == len(sesids):
+                continue
+            lower = sesid
+            upper = len(dataset) if idx == len(sesids)-1 else sesids[idx+1]
+            dataset.loc[np.arange(lower,upper),newcol] = durs[idx]
+    return dataset
