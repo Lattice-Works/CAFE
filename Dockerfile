@@ -19,4 +19,4 @@ ADD chroniclepy /chroniclepy
 WORKDIR /chroniclepy
 RUN python setup.py install
 
-ENTRYPOINT ["python", "/chroniclepy/run.py"]
+ENTRYPOINT ["python", "-u", "/chroniclepy/run.py"]
