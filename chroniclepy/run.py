@@ -29,6 +29,12 @@ def get_parser():
     summaryargs.add_argument('--recodefile',action='store', default=None,
         help = 'a csv file with one column named "fullname" \
         with transformations of the apps (eg. category codes, other names,...)')
+    summaryargs.add_argument('--subsetfile',action='store', default=None,
+        help = 'a csv file with one column named "fullname" \
+        with a column with 1/0 coding which apps to include in the summary statistics.')
+    summaryargs.add_argument('--fullapplistfile',action='store', default=None,
+        help = 'a csv file that will be written with all applications \
+        (to prepare/complete the recodefile).')
     summaryargs.add_argument('--includestartend', action='store_true', default=False,
         help = 'flag to include the first and last day in the summary table.')
     summaryargs.add_argument('--quarterly', action='store_true', default=False,
@@ -54,25 +60,23 @@ def main():
     if opts.stage=='summary' or opts.stage=='all':
         if opts.precision > 15*60:
             raise ValueError("The precision is above a quarter and the minimum precision for summary is by quarter.")
+        if isinstance(opts.weekdefinition,str):
+            if opts.weekdefinition not in ['weekdayMTh', 'weekdaySTh', 'weekdayMF']:
+                raise ValueError("Unknown weekday definition !")
+        if opts.splitweek and not isinstance(opts.weekdefinition,str):
+            raise ValueError("Please specify the weekdefinition if you want !")
 
         summarising.summary(
             infolder = opts.preproc_dir,
             outfolder = opts.output_dir,
             includestartend = opts.includestartend,
             recodefile = opts.recodefile,
+            subsetfile = opts.subsetfile,
+            fullapplistfile = opts.fullapplistfile,
             quarterly = opts.quarterly,
             splitweek = opts.splitweek,
             weekdefinition = opts.weekdefinition
         )
-
-# opts = get_parser().parse_args()
-# infolder = opts.preproc_dir
-# outfolder = opts.output_dir
-# includestartend = opts.includestartend
-# recodefile = opts.recodefile
-# quarterly = opts.quarterly
-# splitweek = True
-# weekdefinition = 'weekdayMF'
 
 if __name__ == '__main__':
     main()
