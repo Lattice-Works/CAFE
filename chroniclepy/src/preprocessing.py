@@ -193,5 +193,6 @@ def preprocess(infolder,outfolder,precision=3600,sessioninterval = 5*60):
             utils.logger("WARNING: File %s does not seem to contain relevant data.  Skipping..."%filename)
             continue
         data = check_overlap_add_sessions(tmp,session_def=sessioninterval)
+        data['duration_minutes'] = data['duration_seconds']/60.
         outfilename = filename.replace('.csv','_preprocessed.csv')
         data.to_csv(os.path.join(outfolder,outfilename),index=False)
