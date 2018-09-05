@@ -143,7 +143,7 @@ def check_overlap_add_sessions(data, session_def = 5*60):
 
     # initiate session column(s)
     for sess in session_def:
-        data['engage_%is'%int(sess)] = False
+        data['engage_%is'%int(sess)] = 0
 
     data['switch_app'] = 0
     # loop over dataset:
@@ -152,7 +152,7 @@ def check_overlap_add_sessions(data, session_def = 5*60):
     for idx,row in data.iterrows():
         if idx == 0:
             for sess in session_def:
-                data.at[idx, 'engage_%is'%int(sess)] = True
+                data.at[idx, 'engage_%is'%int(sess)] = 1
 
         # check time between previous and this app usage
         nousetime = row['start_timestamp']-data['end_timestamp'].iloc[idx-1]
@@ -194,5 +194,5 @@ def preprocess(infolder,outfolder,precision=3600,sessioninterval = 5*60):
             continue
         data = check_overlap_add_sessions(tmp,session_def=sessioninterval)
         data['duration_minutes'] = data['duration_seconds']/60.
-        outfilename = filename.replace('.csv','_preprocessed.csv')
+        outfilename = filename.replace('ChronicleData','ChronicleData_preprocessed')
         data.to_csv(os.path.join(outfolder,outfilename),index=False)
