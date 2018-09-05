@@ -97,7 +97,7 @@ When running the preprocessing, the data is transformed into a table for each pa
 - *weekdayMTh:* Whether or not this is a weekday: 1 = Mon-Thu, 0 = Fri-Sun
 - *weekdaySTh:* Whether or not this is a weekday: 1 = Sun-Thu, 0 = Fri+Sat
 - *hour:* Hour of day
-- *quarter:* Quarter of hour: 1 = first (.00-.15), 2 = second,...
+- *quarter:* Quarter of hour: 1 = first (.00-.14), 2 = second,...
 - *duration_seconds:* Duration (in seconds)
 - *duration_minutes:* Duration (in minutes)
 - *new_engage_(duration):* Whether a new session was initiated with this app usage based on the definition(s) of sessioninterval.  
@@ -131,6 +131,7 @@ If a subsetfile is provided, the output summary files will have a prefix equal t
 
 - Weekday starts on Sunday ! Weekday: 1-7 = Sun-Sat
 - For any column in recodes: there will also be stats for NA, for the apps that are not described in the recode file.
+- In the examples, we separate variables from strings with `\`.  This works on MacOSX.  Replace with `/` on Windows.
 - If you know your way around python and you'd like to develop, feel free to submit pull requests.  Docker is only a level of abstraction to make usage easier, but there's many ways to directly interact with the python code:
     - after installing the python library, you can directly call functions (see `run.py` for arguments/example)
     - after installing the python library, you can for example run:
