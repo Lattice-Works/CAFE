@@ -114,10 +114,10 @@ def fill_appcat_quarterly(dataset,datelist,catlist):
     return dataset
 
 def cut_first_last(dataset):
-    dataset = dataset[
-        (dataset['start_timestamp'].dt.date!= min(dataset['start_timestamp']).date()) & \
-        (dataset['start_timestamp'].dt.date!= max(dataset['start_timestamp']).date())]
-    return dataset
+    dataset = dataset.start_timestamp[
+        (dataset['date'] != min(dataset['date'])) & \
+        (dataset['date'] != max(dataset['date']))]
+    return dataset.reset_index(drop=True)
 
 def add_session_durations(dataset):
     engagecols = [x for x in dataset.columns if x.startswith('engage')]
