@@ -158,7 +158,7 @@ def check_overlap_add_sessions(data, session_def = 5*60):
         nousetime = row['start_timestamp']-data['end_timestamp'].iloc[idx-1]
 
         # check overlap
-        if nousetime < timedelta(microseconds=0):
+        if nousetime < timedelta(microseconds=0) and row['start_timestamp'].date == row['end_timestamp'].date:
             utils.logger("WARNING: Overlapping usage for participant %s: %s was open since %s when %s was openened on %s. \
             Manually closing %s..."%(
                 row['participant_id'],
