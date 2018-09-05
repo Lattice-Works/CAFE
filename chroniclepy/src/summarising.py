@@ -65,4 +65,8 @@ def summary(infolder, outfolder, includestartend=False, recodefile=None, subsetf
         summary.to_csv(os.path.join(outfolder,"%ssummary_%s.csv"%(prefix,k)))
 
     if isinstance(fullapplistfile,str):
-        pd.DataFrame({"full_name": list(allapps)}).to_csv(fullapplistfile)
+        fullapplist = pd.DataFrame({"full_name": list(allapps)})
+        if isinstance(recodefile,str):
+            recode = pd.read_csv(recodefile,index_col='full_name').astype(str)
+            fullapplist = pd.merge(fullapplist,recode,left_on='full_name',right_index=True,how='outer')
+        fullapplist.to_csv(fullapplistfile,index=False)
