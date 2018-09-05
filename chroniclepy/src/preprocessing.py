@@ -175,7 +175,7 @@ def check_overlap_add_sessions(data, session_def = 5*60):
         else:
             for sess in session_def:
                 if nousetime > timedelta(seconds = sess):
-                    data.at[idx, 'engage_%is'%int(sess)] = True
+                    data.at[idx, 'engage_%is'%int(sess)] = 1
 
         # check appswitch
         data.at[idx,'switch_app'] = 1-(row['app_fullname']==data['app_fullname'].iloc[idx-1])*1
