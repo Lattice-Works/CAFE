@@ -114,7 +114,7 @@ def fill_appcat_quarterly(dataset,datelist,catlist):
     return dataset
 
 def cut_first_last(dataset):
-    dataset = dataset.start_timestamp[
+    dataset = dataset[
         (dataset['date'] != min(dataset['date'])) & \
         (dataset['date'] != max(dataset['date']))]
     return dataset.reset_index(drop=True)

@@ -60,13 +60,13 @@ def summarise_person(preprocessed,personID = None, quarterly=False, splitweek = 
         if np.sum(preprocessed[weekdefinition]==1) > 0:
             data['week'] = summarise_modalities.summarise_daily(preprocessed[preprocessed[weekdefinition]==1].reset_index(drop=True),engagecols)
             data['week'].columns = ['%s'%x for x in data['week'].columns]
-            if len(noncustom) > 0:
+            if len(custom) > 0:
                 weekapp = summarise_modalities.summarise_recodes(preprocessed[preprocessed[weekdefinition]==1],custom,quarterly=False,hourly=False)
                 data['appcoding_week'] = weekapp['appcoding_daily']
         if np.sum(preprocessed[weekdefinition]==0) > 0:
             data['weekend'] = summarise_modalities.summarise_daily(preprocessed[preprocessed[weekdefinition]==0].reset_index(drop=True),engagecols)
             data['weekend'].columns = ['%s'%x for x in data['weekend'].columns]
-            if len(noncustom) > 0:
+            if len(custom) > 0:
                 weekndapp = summarise_modalities.summarise_recodes(preprocessed[preprocessed[weekdefinition]==0],custom,quarterly=False,hourly=False)
                 data['appcoding_weekend'] = weekndapp['appcoding_daily']
 
