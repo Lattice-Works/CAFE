@@ -19,9 +19,12 @@ def summary(infolder, outfolder, includestartend=False, recodefile=None, subsetf
     full = {}
     for idx,filenm in enumerate(files):
         utils.logger("LOG: Summarising file %s..."%filenm,level=1)
-        preprocessed = pd.read_csv(os.path.join(infolder,filenm), parse_dates = ['start_timestamp','end_timestamp']).dropna(subset=['app_fullname'])
+        preprocessed = pd.read_csv(os.path.join(infolder,filenm),
+            parse_dates = ['start_timestamp','end_timestamp'],
+            date_parser = lambda x: pd.to_datetime(x.rpartition('-')[0]),
+            ).dropna(subset=['app_fullname'])
         allapps = allapps.union(set(preprocessed['app_fullname']))
-        personID = "-".join(str(filenm).split(".")[-2].split("-")[1:])
+        personID = "-".join(str(filenm).split(".")[-2].split("-")[1:]).replace("_preprocessed","")
         person = summarise_person.summarise_person(
             preprocessed,
             personID = personID,
