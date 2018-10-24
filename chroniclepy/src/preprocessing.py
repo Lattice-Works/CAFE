@@ -64,7 +64,7 @@ def get_timestamps(prevtime,curtime,row=None,precision=60):
             "weekdaySTh": 1 if (starttime.weekday() < 4 or starttime.weekday()==6) else 0,
             "hour": starttime.hour,
             "quarter": int(np.floor(starttime.minute/15.))+1,
-            "duration_seconds": (endtime-starttime).seconds,
+            "duration_seconds": (endtime-starttime).seconds
         }
 
         outmetrics['participant_id'] = row['person']

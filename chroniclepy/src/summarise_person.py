@@ -10,6 +10,9 @@ def summarise_person(preprocessed,personID = None, quarterly=False, splitweek = 
     # this needs to happen **before** subsetting
     preprocessed = utils.add_session_durations(preprocessed)
 
+    if not includestartend:
+        preprocessed = utils.cut_first_last(preprocessed).reset_index(drop=True)
+
     if isinstance(subsetfile,str):
         subset = pd.read_csv(subsetfile,index_col='full_name').astype(str)
         if len(subset.columns)>1:
@@ -22,9 +25,6 @@ def summarise_person(preprocessed,personID = None, quarterly=False, splitweek = 
         recode = pd.read_csv(recodefile,index_col='full_name').astype(str)
         newcols = preprocessed.apply(lambda x: utils.recode(x,recode),axis=1)
         preprocessed[recode.columns] = newcols
-
-    if not includestartend:
-        preprocessed = utils.cut_first_last(preprocessed).reset_index(drop=True)
 
     if splitweek:
         if np.sum(preprocessed[weekdefinition]==1)==0:
