@@ -25,7 +25,7 @@ def extract_onsets_subject(all_subjects, subid, cat1, cat1col, cat2, cat2col, ca
         inprogress = eventset.loc[min(eventid)][cat2col] == cat2val
 
         # compute percentage
-        if cat2col in cat2agg.index:
+        if cat2val in list(cat2agg.index):
             percentage = cat2agg.loc[cat2val]['duration'] / float(np.sum(eventset['duration']))
         else:
             percentage = 0.0
@@ -84,7 +84,6 @@ def extract_onsets_subject(all_subjects, subid, cat1, cat1col, cat2, cat2col, ca
                 out['time_until_next'] = dif.seconds + dif.microseconds/10**6
         onsettable = onsettable.append(out,ignore_index=True)
     return onsettable
-
 
 def extract_onsets(all_subjects, cat1, cat1col, cat2, cat2col, cat2val):
     subids = np.unique(all_subjects['subject_ID'])
