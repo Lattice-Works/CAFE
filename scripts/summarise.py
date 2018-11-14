@@ -53,23 +53,28 @@ conditions = [
 # Group categorical conditions
 ################################
 
-for condition in conditions:
-    cat2 = condition['cat2']
-    cat2col = condition['cat2col']
-    cat2val = condition['cat2val']
-    cat1 = condition['cat1']
-    cat1col = condition['cat1col']
-    all_subjects = utils_combine.combine_2_conditions_all(basedir, cat1, cat1col, cat2, cat2col)
+condition = conditions[1]
+# for condition in conditions:
+cat2 = condition['cat2']
+cat2col = condition['cat2col']
+cat2val = condition['cat2val']
+cat1 = condition['cat1']
+cat1col = condition['cat1col']
+all_subjects = utils_combine.combine_2_conditions_all(basedir, cat1, cat1col, cat2, cat2col)
 
-    for includetransition in [False, True]:
-        suffix = "" if includetransition else "_trimmed"
-        outfile = os.path.join(outsummary,"conditions_%s-%s_%s-%s%s.csv"%(cat1,cat1col,cat2,cat2col,suffix))
-        grouped = utils_combine.group_2_conditions(all_subjects, cat1col, cat2col, includetransition)
-        grouped.to_csv(outfile,index=False)
+# subset = all_subjects[all_subjects.subject_ID==subid]
+# onsettable = utils_onsets.extract_onsets_subject(all_subjects, subid, cat1, cat1col, cat2, cat2col, cat2val)
 
-        onsettable = utils_onsets.extract_onsets(all_subjects, cat1, cat1col, cat2, cat2col, cat2val)
-        outfile = os.path.join(outonset,"%s-%s_%s-%s-%s.csv"%(cat1,cat1col,cat2,cat2col,cat2val))
-        onsettable.to_csv(outfile,index=False)
+includetransition = True
+# for includetransition in [False, True]:
+suffix = "" if includetransition else "_trimmed"
+outfile = os.path.join(outsummary,"conditions_%s-%s_%s-%s%s.csv"%(cat1,cat1col,cat2,cat2col,suffix))
+grouped = utils_combine.group_2_conditions(all_subjects, cat1col, cat2col, includetransition)
+grouped.to_csv(outfile,index=False)
+
+onsettable = utils_onsets.extract_onsets(all_subjects, cat1, cat1col, cat2, cat2col, cat2val)
+outfile = os.path.join(outonset,"%s-%s_%s-%s-%s.csv"%(cat1,cat1col,cat2,cat2col,cat2val))
+onsettable.to_csv(outfile,index=False)
 
 
 
