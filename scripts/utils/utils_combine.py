@@ -89,7 +89,6 @@ def combine_2_conditions_all(basedir, cat1, cat1col, cat2, cat2col):
         all_subjects['duration'] = all_subjects.apply(secondsdif, axis=1)
     return all_subjects
 
-
 def add_percentage(row,times):
     time = row['sum']
     totaltime = times.loc[(row.name[0],row.name[2]),'sum']

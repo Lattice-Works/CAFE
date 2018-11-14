@@ -65,14 +65,13 @@ for condition in conditions:
         suffix = "" if includetransition else "_trimmed"
         outfile = os.path.join(outsummary,"conditions_%s-%s_%s-%s%s.csv"%(cat1,cat1col,cat2,cat2col,suffix))
         grouped = utils_combine.group_2_conditions(all_subjects, cat1col, cat2col, includetransition)
-            grouped.to_csv(outfile,index=False)
+        grouped.to_csv(outfile,index=False)
 
         onsettable = utils_onsets.extract_onsets(all_subjects, cat1, cat1col, cat2, cat2col, cat2val)
         outfile = os.path.join(outonset,"%s-%s_%s-%s-%s.csv"%(cat1,cat1col,cat2,cat2col,cat2val))
         onsettable.to_csv(outfile,index=False)
 
 
-onsettable[onsettable.subject_ID=="WI_AMP_008"]
 
 ######### GROUP PHYSIO
 
