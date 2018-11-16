@@ -30,17 +30,21 @@ def extract_onsets_subject(all_subjects, subid, cat1, cat1col, cat2, cat2col, ca
         else:
             percentage = 0.0
 
+        cut_duration = max(eventset.timestamp_offset)-min(eventset.timestamp_onset)
+        cut_duration = cut_duration.seconds + cut_duration.microseconds/10**6
+
         # collect aggregates
         out = {
             "subject_ID": subid,
             "%s_ID"%cat1col: cond,
             "%s_onset"%cat1col: min(eventset.timestamp_onset),
-            "%s_duration"%cat1col: max(eventset.timestamp_offset)-min(eventset.timestamp_onset),
+            "%s_duration"%cat1col: cut_duration,
             "%s_at_onset"%cat2col: inprogress,
             "%s_attention_percentage"%cat2col: percentage,
             "%s_attention_entire"%cat2col: percentage == 1
         }
         if inprogress:
+
             # find first instance of this condition
             beendone = False
             for idx in np.arange(min(eventid))[::-1]:
@@ -51,6 +55,7 @@ def extract_onsets_subject(all_subjects, subid, cat1, cat1col, cat2, cat2col, ca
                 ongoingsince = subset.iloc[idx+1].timestamp_onset
                 dif = min(eventset.timestamp_onset) - ongoingsince
                 out['time_in_progress'] = dif.seconds + dif.microseconds/10**6
+
             # find last instance of this condition
             tobedone = False
             for idx in np.arange(min(eventid),len(subset)):
@@ -60,8 +65,9 @@ def extract_onsets_subject(all_subjects, subid, cat1, cat1col, cat2, cat2col, ca
             if tobedone:
                 ongoinguntil = subset.iloc[idx-1].timestamp_offset
                 dif = ongoinguntil - min(eventset.timestamp_onset)
-                out['time_sustained'] = dif.seconds + dif.microseconds/10**6
+                out['time_maintained'] = dif.seconds + dif.microseconds/10**6
         else:
+
             # find last instance of this condition before current tp
             beendone = False
             for idx in np.arange(min(eventid))[::-1]:
@@ -72,6 +78,7 @@ def extract_onsets_subject(all_subjects, subid, cat1, cat1col, cat2, cat2col, ca
                 stoppedsince = subset.iloc[idx].timestamp_offset
                 dif = min(eventset.timestamp_onset) - stoppedsince
                 out['time_since last'] = dif.seconds + dif.microseconds/10**6
+
             # find first instance of this condition after current tp
             tobedone = False
             for idx in np.arange(min(eventid),len(subset)):
