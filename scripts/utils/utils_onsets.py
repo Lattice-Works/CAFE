@@ -13,11 +13,6 @@ def extract_onsets_subject(all_subjects, subid, cat1, cat1col, cat2, cat2col, ca
 
     for cond in cat1conds:
 
-
-        ######### BUGS
-        ## PERCENTAGE SHOULD NOT BE ZERO !
-        ## DIFFERENCES WITH WI_AMP_011
-
         # get event
         eventid = np.where(subset[cat1col] == cond)[0]
         eventset = subset.iloc[eventid]
@@ -82,11 +77,11 @@ def extract_onsets_subject(all_subjects, subid, cat1, cat1col, cat2, cat2col, ca
             # find first instance of this condition after current tp
             tobedone = False
             for idx in np.arange(min(eventid),len(subset)):
-                if subset.iloc[idx][cat2col] != cat2val:
+                if subset.iloc[idx][cat2col] == cat2val:
                     tobedone = True
                     break
             if tobedone:
-                nextevent = subset.iloc[idx+1].timestamp_onset
+                nextevent = subset.iloc[idx].timestamp_onset
                 dif = nextevent - min(eventset.timestamp_onset)
                 out['time_until_next'] = dif.seconds + dif.microseconds/10**6
         onsettable = onsettable.append(out,ignore_index=True)
