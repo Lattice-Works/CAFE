@@ -1,0 +1,3 @@
+[submodule "chroniclepy"]
+	path = chroniclepy
+	url = https://github.com/Lattice-Works/chroniclepy.git
