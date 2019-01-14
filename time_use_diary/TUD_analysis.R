@@ -76,6 +76,7 @@ TU$Q38 = parse_bool(TU$Q38)
 TU$Q43 = parse_bool(TU$Q43)
 TU$Q46 = parse_bool(TU$Q46)
 TU$Q50 = parse_bool(TU$Q50)
+TU$Q51 = parse_bool(TU$Q51)
 TU$Q54 = parse_bool(TU$Q54)
 TU$Q57 = parse_bool(TU$Q57)
 TU$Q58 = parse_bool(TU$Q58)
@@ -119,7 +120,77 @@ TU$activity = gdata::case(
   default="ERROR"
   )
 
+# add number of devices
+devices <- c('Television set',
+             'Computer \\(desktop or laptop\\)',
+             'Smartphone \\(e.g. iPhone/ Galaxy\\)',
+             'Touchscreen tablet/device \\(e.g. iPad/ iPod Touch/ Galaxy Tab/ Nook/ Kindle\\)',
+             'Printed book',
+             'Video player \\(e.g. DVD/ DVR or VCR\\)',
+             'Console gaming system \\(e.g. Wii or xBox\\)',
+             'Handheld gaming device \\(e.g. 3DS\\)',
+             'Radio or CDs',
+             'Went to a movie in a movie theater or outdoor theater',
+             'Other')
+devices = str_c(devices, collapse="|")
+TU = mutate(TU, primary_screen_devices_n = str_count(Q2, devices))
+
+primary_video <- 'Watched video content \\(e.g. TV show/ movie/ video clips includes using a streaming service \\(e.g. Netflix/ YouTube/ Amazon Prime/ Hulu\\)'
+TU$primary_video <- str_detect(TU$Q3, primary_video)
+primary_media_tvvideo <- c(primary_video,'Looked up information on the internet','Played games \\(this includes playing on an app/ a console/or a handheld device\\)')
+primary_media_tvvideo <- str_c(primary_media_tvvideo, collapse="|")
+TU$primary_media_tvvideo <- str_detect(TU$Q3, primary_media_tvvideo)
+videochat <- 'Video chat \\(e.g. Facetime/ Skype/ Google Hangout\\)'
+TU$videochat <- str_detect(TU$Q3, videochat)
+books <- 'Looked at/read/heard a story'
+TU$primary_media_books <- str_detect(TU$Q3, books)
+TU$bvideo = TU$Q51
+
+TU$screenmedia <- (TU$bvideo|
+                     TU$btv|
+                     TU$primary_media_tvvideo|
+                     TU$primary_screen_devices_n>0)
+
+# adult presence
+Q6codes = c("Mother/Mother figure", 
+            "Father|Father figure", 
+            "Grandparent", 
+            "Childcare provider/babysitter")
+adult_regex <- str_c(Q6codes, collapse="|")
+TU$adult_coviewing = (str_detect(TU$Q6, adult_regex) |
+                      str_detect(TU$Q18, adult_regex) |
+                      str_detect(TU$Q41, adult_regex) |
+                      str_detect(TU$Q49, adult_regex)
+                        )
+
+# no adult presence
+Q6codes = c("Sibling", 
+            "Other kids", 
+            "No one")
+
+no_adult_regex <- str_c(Q6codes, collapse="|")
+TU$adult_coviewing = (str_detect(TU$Q6, no_adult_regex) |
+                        str_detect(TU$Q18, no_adult_regex) |
+                        str_detect(TU$Q41, no_adult_regex) |
+                        str_detect(TU$Q49, no_adult_regex)
+                      )
 
 
+# add content age
+program_for <- c("Child's age",
+                 "Older children",
+                 "Younger children",
+                 "Adults",
+                 "Don't know/other"
+                 )
 
+TU = mutate(TU, content_age = coalesce(Q4,Q13,Q22,Q31,Q44,Q52,Q59))
+
+TU$play <- str_detect(TU$activity,"play")
+
+TU$within1hrofsleep = abs(TU$StartTime - parse_time("18:00:00"))<3600
+
+TU$screensandfeeding <- TU$screenmedia & TU$activity == "feeding"
+
+# next up: check within personID loop over time: next feeding, next sleeping
 
