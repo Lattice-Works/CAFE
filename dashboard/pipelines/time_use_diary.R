@@ -15,9 +15,9 @@ read_TU <- function(filename) {
     )
   )
   
-  # save mapping of questions to variable names
-  write.csv(get_mapping(TU), "/Users/jokedurnez/Documents/accounts/CAFE/CAFE/time_use_diary/map.csv")
-  
+  # save mapping of questions to variable names --> this is not exported/saved
+  map <- get_mapping(TU)
+
   # remove first header rows
   TU <- TU[3:nrow(TU),]
   
