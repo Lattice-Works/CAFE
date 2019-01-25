@@ -1,8 +1,12 @@
 library(shiny)
 library(shinydashboard)
 library(GGally)
+library(openapi)
+library(knitr)
+library(httr)
 
 source("pipelines/time_use_diary.R")
+source("pipelines/load_data.R")
 
 # read in data
 TUfile <-
@@ -25,16 +29,24 @@ if (interactive()) {
     skin = "black",
     
     dashboardHeader(
-      title = tags$a(href="http://www.openlattice.com", div(img(src='logo.png',height=30), "CAFE analytics dashboard")),
+      title = tags$a(href="http://www.openlattice.com", div(img(src='logo.png',height=30))),
       titleWidth = 600
       ),
     
     dashboardSidebar(
-      sidebarMenu(
-        menuItem("Preprocessed data", tabName = "preprocessed"),
-        menuItem("Summary data", tabName = "summarised"),
-        menuItem("Histograms", tabName = "histograms"),
-        menuItem("Cross-Plots", tabName = "cross-plots")
+      sidebarSearchForm(textId = "jwt", buttonId = "authButton",
+                        label = "Enter your jwt-token."),
+      conditionalPanel(
+        condition = "output.auth==1",
+        sidebarMenu(
+          menuItem("Home", tabName = "home"),
+          menuItem("Preprocessed data", tabName = "preprocessed"),
+          menuItem("Summary data", tabName = "summarised"),
+          menuItem("Charts", startExpanded = TRUE,
+            menuSubItem("Histograms", tabName = "histograms"),
+            menuSubItem("Cross-Plots", tabName = "cross-plots")
+          )
+        )
       )
     ),
     
@@ -43,6 +55,19 @@ if (interactive()) {
         tags$link(rel="stylesheet", type="text/css", href="custom.css")
         ),
       tabItems(
+        tabItem(
+          'home',
+          fluidRow(
+            box(
+              title = "Welcome",
+              width = 12,
+              background = "purple"
+            ),
+            valueBoxOutput( 'activityCounterBox'),
+            valueBoxOutput( 'datasetCounterBox'),
+            valueBoxOutput( 'kidsCounterBox')
+          )
+        ),
         tabItem(
           "preprocessed",
           fluidRow(
@@ -129,8 +154,23 @@ if (interactive()) {
   
   server <- function(input, output, session) {
     
-    output$preprocessed <- renderDataTable({
-      as_tibble(TUD_preprocessed)
+    data <- reactive({load_data(input$jwt)})
+    
+    output$auth <- reactive({data()$auth})
+    
+    output$activityCounterBox <- renderInfoBox({
+      valueBox(data()$n_act, "activity blocks", color = "purple")
+    })
+    output$kidsCounterBox <- renderInfoBox({
+      valueBox(data()$n_child, "children", color = "purple")
+    })
+    
+    output$datasetCounterBox <- renderInfoBox({
+      valueBox(length(data()$nodes), "entities", color = "purple")
+    })
+
+   output$preprocessed <- renderDataTable({
+      data()$nodes$survey_metadata
     },
     options = list(scrollX = TRUE)
     )
@@ -178,7 +218,7 @@ if (interactive()) {
     )
     
     
-    
+    outputOptions(output, 'auth', suspendWhenHidden = FALSE)
   }
 }
 shinyApp(ui, server)
