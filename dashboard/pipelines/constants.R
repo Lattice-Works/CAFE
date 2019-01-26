@@ -27,11 +27,6 @@ TUD_associations <- list(
   ),
   list(
     src = 'media_exposure',
-    dst = 'media_exposure',
-    edge = 'concurrent_to'
-  ),
-  list(
-    src = 'media_exposure',
     dst = 'adult_use',
     edge = 'concurrent_to'
   ),
