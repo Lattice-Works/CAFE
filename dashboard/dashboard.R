@@ -7,6 +7,7 @@ library(httr)
 
 source("pipelines/time_use_diary.R")
 source("pipelines/load_data.R")
+source("pipelines/transform_data.R")
 
 # read in data
 TUfile <-
@@ -156,6 +157,8 @@ if (interactive()) {
     
     data <- reactive({load_data(input$jwt)})
     
+    activitydata <- reactive({process_activities(data())})
+    
     output$auth <- reactive({data()$auth})
     
     output$activityCounterBox <- renderInfoBox({
@@ -170,7 +173,7 @@ if (interactive()) {
     })
 
    output$preprocessed <- renderDataTable({
-      data()$nodes$survey_metadata
+     activitydata()
     },
     options = list(scrollX = TRUE)
     )
