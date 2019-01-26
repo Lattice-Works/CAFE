@@ -8,6 +8,7 @@ edmApi <- EdmApi$new()
 dataApi <- DataApi$new()
 searchApi <- SearchApi$new()
 
+
 load_data <- function(jwt) {
   print("Getting the data !")
   header_params = unlist(list("Authorization" = paste("Bearer", jwt)))
@@ -70,6 +71,10 @@ transform_edges <- function(name, edges){
 }
 
 get_edge_table <- function(input, datasets, entsets){
+  
+  if (dim(datasets[[input$src]])[1] == 0) {
+    return (tibble())
+  }
   entkeys = as.vector(unlist(datasets[[input$src]]['openlattice.@id']))
   filter = NeighborSearchFilter$new(
     entityKeyIds = entkeys,
