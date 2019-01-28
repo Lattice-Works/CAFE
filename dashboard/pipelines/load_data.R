@@ -1,5 +1,6 @@
+library(tidyverse)
 library(openapi)
-library(purrr)
+library(httr)
 
 setwd("/Users/jokedurnez/Documents/accounts/CAFE/CAFE/dashboard/")
 source("pipelines/constants.R")
@@ -9,12 +10,14 @@ dataApi <- DataApi$new()
 searchApi <- SearchApi$new()
 
 
-load_data <- function(jwt) {
+load_data <- function(jwt, local=FALSE) {
   print("Getting the data !")
+  
+  basepath = ifelse(local == TRUE, "http://localhost:8080", "https://api.openlattice.com")
   header_params = unlist(list("Authorization" = paste("Bearer", jwt)))
   client <- ApiClient$new(
     defaultHeaders = header_params,
-    basePath = "http://localhost:8080"
+    basePath = basepath
   )
 
   edmApi <<- EdmApi$new(apiClient = client)

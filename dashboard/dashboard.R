@@ -5,23 +5,9 @@ library(openapi)
 library(knitr)
 library(httr)
 
-source("pipelines/time_use_diary.R")
 source("pipelines/load_data.R")
 source("pipelines/transform_data.R")
-
-# read in data
-TUfile <-
-  "/Users/jokedurnez/Downloads/Time use diary set up and analysis/GU TUD 5Oct2018 Numeric.csv"
-
-TUD_preprocessed <- TUfile %>%
-  read_TU() %>%
-  clean_TUD() %>%
-  preprocess_TUD()
-
-TUD_summarised <- TUD_preprocessed %>%
-  summarise_TUD()
-
-numcols <- names(dplyr::select_if(TUD_summarised,is.numeric))
+source("pipelines/summarise_data.R")
 
 if (interactive()) {
   
@@ -30,8 +16,7 @@ if (interactive()) {
     skin = "black",
     
     dashboardHeader(
-      title = tags$a(href="http://www.openlattice.com", div(img(src='logo.png',height=30))),
-      titleWidth = 600
+      title = tags$a(href="http://www.openlattice.com", div(img(src='logo.png',height=30)))
       ),
     
     dashboardSidebar(
@@ -41,9 +26,12 @@ if (interactive()) {
         condition = "output.auth==1",
         sidebarMenu(
           menuItem("Home", tabName = "home"),
-          menuItem("Preprocessed data", tabName = "preprocessed"),
-          menuItem("Summary data", tabName = "summarised"),
-          menuItem("Charts", startExpanded = TRUE,
+          menuItem("Activity level data", tabName = "preprocessed"),
+          menuItem("Activity level charts", startExpanded = TRUE,
+            menuSubItem("Barcharts", tabName = "barcharts")
+          ),
+          menuItem("Child level data", tabName = "summarised"),
+          menuItem("Child level charts", startExpanded = TRUE,
             menuSubItem("Histograms", tabName = "histograms"),
             menuSubItem("Cross-Plots", tabName = "cross-plots")
           )
@@ -104,19 +92,46 @@ if (interactive()) {
         ),
   
         tabItem(
+          "barcharts",
+          fluidRow(
+            column(
+              width = 4,
+              box(
+                width = 12,
+                title = "Select column",
+                selectInput(inputId = 'barchart_columns', choices = c('test'), label='Column'),
+                selectInput(inputId = "barchart_grouper_columns", choices = c('test'), label='Column')
+              )
+            ),
+            column(
+              width = 8,
+              box(
+                width = 12, solidHeader = TRUE,
+                title = "Barplot",
+                plotOutput(outputId = "barplot")
+              )
+            )
+          )
+        ),
+
+                tabItem(
           "histograms",
           fluidRow(
-            box(
-              width = 12,
-              title = "Select column",
-              selectInput(inputId = 'hist_column', choices = numcols, label='Column')
-            )
-          ),
-          fluidRow(
-            box(
-              width = 12, solidHeader = TRUE,
-              title = "Histogram",
-              plotOutput(outputId = "histogram")
+            column(
+              width = 4,
+              box(
+                width = 12,
+                title = "Select column",
+                radioButtons(inputId = 'hist_column', choices = c('test'), label='Column')
+              )
+            ),
+            column(
+              width = 8,
+               box(
+                width = 12, solidHeader = TRUE,
+                title = "Histogram",
+                plotOutput(outputId = "histogram")
+              )
             )
           )
         ),
@@ -133,8 +148,7 @@ if (interactive()) {
                 checkboxGroupInput(
                   "cross_columns", 
                   "Choose columns:",
-                  choiceNames = as.list(numcols),
-                  choiceValues = as.list(numcols)
+                  choices = c("test")
                 )
               )
             ),
@@ -155,21 +169,37 @@ if (interactive()) {
   
   server <- function(input, output, session) {
     
-    data <- reactive({load_data(input$jwt)})
+    cols <- c("#6124e2", "#ff3c5d", "#ffe671", "#ff9a58", "#dd9e00", "#00be84")
+    nacol <- "#dcdce7"
     
-    activitydata <- reactive({process_activities(data())})
     
-    output$auth <- reactive({data()$auth})
+    rawdata <- reactive({load_data(input$jwt)})
+    
+    activitydata <- reactive({process_activities(rawdata())})
+    actcols <- reactive({activitydata() %>% names()})
+    observe({updateSelectInput(session, "barchart_columns", choices = actcols())})
+    observe({updateSelectInput(session, "barchart_grouper_columns", choices = actcols())})
+    
+    summarydata <- reactive({summarise_data(activitydata())})
+    numcols <- reactive({
+      if (!(dim(summarydata())[1]== 0)){
+        summarydata() %>% select(which(sapply(., is.numeric))) %>% names()
+      }
+      })
+    observe({updateRadioButtons(session, "hist_column", choices = numcols())})
+    observe({updateCheckboxGroupInput(session, "cross_columns", choices = numcols())})
+    
+    output$auth <- reactive({rawdata()$auth})
     
     output$activityCounterBox <- renderInfoBox({
-      valueBox(data()$n_act, "activity blocks", color = "purple")
+      valueBox(rawdata()$n_act, "activity blocks", color = "purple")
     })
     output$kidsCounterBox <- renderInfoBox({
-      valueBox(data()$n_child, "children", color = "purple")
+      valueBox(rawdata()$n_child, "children", color = "purple")
     })
     
     output$datasetCounterBox <- renderInfoBox({
-      valueBox(length(data()$nodes), "entities", color = "purple")
+      valueBox(length(rawdata()$nodes), "entities", color = "purple")
     })
 
    output$preprocessed <- renderDataTable({
@@ -179,29 +209,40 @@ if (interactive()) {
     )
     
     output$summarised <- renderDataTable({
-      as_tibble(TUD_summarised)
+      summarydata()
     },
     options = list(scrollX = TRUE)
     )
     
+    output$barplot <- renderPlot({
+      if ((typeof(activitydata()[[input$barchart_columns]]) == "integer" | typeof(activitydata()[[input$barchart_columns]]) == "logical") &
+          (typeof(activitydata()[[input$barchart_grouper_columns]]) == "integer" | typeof(activitydata()[[input$barchart_grouper_columns]]) == "logical")) {
+        ggplot(activitydata(), aes_string(x = input$barchart_columns, fill=input$barchart_grouper_columns)) +
+          geom_bar() + theme_light() +
+          scale_fill_manual(values = cols, aesthetics = "fill", na.value = nacol)
+      }
+    })
+    
     output$histogram <- renderPlot({
       ggplot(
-        TUD_summarised,
+        summarydata(),
         aes_string(x = input$hist_column)
       ) +
         geom_histogram(
           binwidth = 1,
           fill = "#4c14c4"
-          )
+          ) +
+        scale_fill_manual(values = cols, aesthetics = "fill", na.value = nacol)
+      
     })
    
     output$crossplot <- renderPlot({
       if (length(input$cross_columns) > 0){
         ggpairs(
-          TUD_summarised[,input$cross_columns],
+          summarydata()[,input$cross_columns],
           color = "black",
-          diag = list(continuous = wrap("densityDiag", fill = "#4c14c4")),
-          lower = list(continuous=wrap("smooth", colour="#4c14c4"))
+          diag = list(continuous = wrap("densityDiag", fill = cols[1])),
+          lower = list(continuous=wrap("smooth", colour=cols[2]))
         )
       }
     })
@@ -209,17 +250,16 @@ if (interactive()) {
     output$download_preprocessed <- downloadHandler(
       filename = "CAFE_TUD_preprocessed.csv",
       content = function(file) {
-        write.csv(TUD_preprocessed, file, row.names = FALSE)
+        write.csv(activitydata(), file, row.names = FALSE)
       }
     )
   
     output$download_summarised <- downloadHandler(
       filename = "CAFE_TUD_summarised.csv",
       content = function(file) {
-        write.csv(TUD_summarised, file, row.names = FALSE)
+        write.csv(summarydata(), file, row.names = FALSE)
       }
     )
-    
     
     outputOptions(output, 'auth', suspendWhenHidden = FALSE)
   }
