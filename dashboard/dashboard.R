@@ -61,7 +61,7 @@ if (interactive()) {
           "preprocessed",
           fluidRow(
             box(
-              width = 12, 
+              width = 12,
               column(12, align="center", downloadButton("download_preprocessed", "Download"))
             )
           ),

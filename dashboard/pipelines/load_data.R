@@ -48,9 +48,13 @@ load_data <- function(jwt, local=FALSE) {
   )
 }
 
+for (nm in TUD_entities){
+  print(get_id(nm,entsets))
+}
+
 get_id <- function(cafename, entsets){
   # get entities and check if response came back
-  return(entsets %>% as_tibble() %>% filter(str_detect(name, cafename)) %>% pull(id))
+  return(entsets %>% as_tibble() %>% filter(str_detect(name, cafename) & str_detect(name, "CAFE")) %>% pull(id))
 }
 
 get_dataset <- function(cafename, entsets){
