@@ -1,39 +1,48 @@
 # libraries
 library(tidyverse)
 library(lubridate)
+library(readxl)
 
 # filenames
 args <- commandArgs()
 rawfile <- args[6]
 cleanfile <- args[7]
+participant_decoding_file <- args[8]
+id_column <- args[9]
+demographyfile <- args[10]
+rawfile2 <- args[11]
 
-participant_decoding_file = "/Users/jokedurnez/Box/CAFE Consortium/ParticipantIDs/participant_master/Participants_2019-03-05.csv"
-
-# read data
-MAQ <- read_csv(rawfile) %>% slice(3:n())
-
-
-clean_id <- function(x){
-    if (x == "" | is.na(x)){return (NA)}
-    if (str_detect(x, "PM|Pm|pm")){
-
-        pid <- x %>% toupper() %>% str_replace("_", "-")
-
-        # if in perfect shape : return
-        if (!is.na(str_match(pid, "PM-\\d{2}-\\d{3,4}.*"))) {
-            return(pid)
-        }
-
-        # if PM00000
-        pidh <- pid %>% str_replace("_", "") %>% str_replace("-", "") %>% str_replace(" ","")
-        if (!is.na(str_match(pidh, "PM\\d{5}.*"))){
-            return(paste0("PM-", substr(pidh,3,5), "-", substr(pidh, 6, 7)))
-        }
-
-        return(pid)
-    }
-    return(x %>% toupper() %>% str_replace("_", "") %>% str_replace("-", ""))
+if (!is.na(rawfile2)){
+  rawfiles <- c(rawfile, rawfile2)
+} else {
+  rawfiles <- c(rawfile)
 }
 
-MAQ = MAQ %>% rowwise() %>% mutate(clean_ID = clean_id(Q262))
+# read data
+for (file in rawfiles){
+  MAQ <- tibble()
+  if (endsWith(file, "csv")){
+    thisMAQ <- read_csv(file) %>% slice(3:n())
+  } else {
+    thisMAQ <- read_excel(file)
+  }
+  MAQ <- rbind(MAQ, thisMAQ)  
+}
+
+MAQ <- MAQ[,1:200]
+
+if (!(is.na(demographyfile) | demographyfile == "")){
+  demography <- read_csv(demographyfile) %>% group_by(appcode) %>%
+    filter(row_number() == n()) %>% ungroup()
+  MAQ <- MAQ %>% left_join(demography, by = c("Q281" = 'appcode'))
+}
+
+participants <- read_csv(participant_decoding_file)
+participants <- participants %>% replace_na(list(respondent_id = 1))
+
+MAQ <- MAQ %>%
+  rename(maq_id = id_column) %>%
+  left_join(participants, by = "maq_id") %>%
+  mutate(respondent_id = paste0(child_id, respondent_id, separator="-"))
+
 write_csv(MAQ, cleanfile, na="")
