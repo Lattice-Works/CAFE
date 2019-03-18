@@ -21,6 +21,9 @@ parser.add_argument('--cleanfile', dest='cleanfile')
 parser.add_argument('--codedir', dest='codedir')
 parser.add_argument('--shuttle', dest='shuttle')
 parser.add_argument('--integrationsdir', dest='integrationsdir')
+parser.add_argument('--jwt', dest='jwt')
+parser.add_argument('--local', dest='local', action='store_true')
+
 args = parser.parse_args()
 
 integration_dir = args.integrationsdir
@@ -40,7 +43,8 @@ with open(os.path.join(code_dir,"integration/secrets.yaml"), 'r') as fl:
     secrets = yaml.load(fl)
 
 jwt = OL.get_jwt(secrets, user="cafe")['access_token']
-configuration = OL.get_config(jwt, local=False)
+# jwt = args.jwt
+configuration = OL.get_config(jwt, local=args.local)
 
 edmAPI = openlattice.EdmApi(openlattice.ApiClient(configuration))
 dataAPI = openlattice.DataApi(openlattice.ApiClient(configuration))
@@ -84,43 +88,44 @@ for entityset in entitysets:
         edmAPI.create_entity_sets(entity_set=[entityset])
     except openlattice.rest.ApiException:
         print("This entity already exists, clearing now: %s"%entityset['name'])
-        entsetid = edmAPI.get_entity_set_id(entityset['name'])
-        dataAPI.delete_all_entities_from_entity_set(entsetid, "Hard")
-    entsetid = [edmAPI.get_entity_set_id(entityset['name'])][0]
+        # entsetid = edmAPI.get_entity_set_id(entityset['name'])
+        # dataAPI.delete_all_entities_from_entity_set(entsetid, "Hard")
+    entsetid = edmAPI.get_entity_set_id(entityset['name'])
 
     # assign owner permissions
 
     for role in ["OWNER", "READ", "READ DEIDENTIFIED"]:
         roleperm = role.split(" ")[0]
-
+    
         rolid = [x for x in organisation.roles if x.title.endswith(role.replace("Z", "S"))][0].principal.id
         aces = [openlattice.Ace(
             principal = openlattice.Principal(type="ROLE", id= rolid),
             permissions = [roleperm]
         )]
-
+    
         acldata = openlattice.AclData(action = "ADD",
             acl = openlattice.Acl(acl_key = [entsetid],aces = aces))
-
+    
         permissionsAPI.update_acl(acldata)
         properties = edmAPI.get_entity_type(entityset['entityTypeId'])
         propids = list(set(properties.properties + properties.key))
         for propid in propids:
             if propid == '5260cfbd-bfa4-40c1-ade5-cd83cc9f99b2' and role == "READ DEIDENTIFIED":
                 continue
-
+    
             acldata = openlattice.AclData(action = "ADD",
                 acl = openlattice.Acl(acl_key = [entsetid,propid],aces = aces))
             permissionsAPI.update_acl(acldata)
 
-statement = "{shuttle} --flight {flight} --token {token} --csv \"{csv}\" --environment PRODUCTION --upload-size 500".format(
+statement = "{shuttle} --flight {flight} --token {token} --csv \"{csv}\" --environment {local} --upload-size 500".format(
     shuttle = shuttle,
     flight = tmpfile,
     token = jwt,
-    csv = cleanfile
+    csv = cleanfile,
+    local = "LOCAL" if args.local else "PRODUCTION"
 )
 print(statement)
 p = Popen(statement, shell=True, stdout = PIPE, stderr= PIPE)
 stdout, stderr = p.communicate()
-print ("stdout: '%s'" % stdout)
-print ("stderr: '%s'" % stderr)
+print ("stdout: '%s'" % stdout.decode("utf-8") )
+print ("stderr: '%s'" % stderr.decode("utf-8") )

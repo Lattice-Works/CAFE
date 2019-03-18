@@ -20,6 +20,8 @@ parser.add_argument('--cleanfile', dest='cleanfile')
 parser.add_argument('--codedir', dest='codedir')
 parser.add_argument('--shuttle', dest='shuttle')
 parser.add_argument('--integrationsdir', dest='integrationsdir')
+parser.add_argument('--jwt', dest='jwt')
+parser.add_argument('--local', dest='local', action='store_true')
 args = parser.parse_args()
 
 integration_dir = args.integrationsdir
@@ -37,8 +39,10 @@ with open(os.path.join(code_dir,"integration/config.yaml"), 'r') as fl:
 with open(os.path.join(code_dir,"integration/secrets.yaml"), 'r') as fl:
     secrets = yaml.load(fl)
 
-jwt = OL.get_jwt(secrets, user="cafe")['access_token']
-configuration = OL.get_config(jwt, local=False)
+jwt = OL.get_jwt(secrets, user="cafe", local=True)['access_token']
+jwt = args.jwt
+
+configuration = OL.get_config(jwt, local=args.local)
 
 edmAPI = openlattice.EdmApi(openlattice.ApiClient(configuration))
 dataAPI = openlattice.DataApi(openlattice.ApiClient(configuration))
@@ -54,9 +58,15 @@ organisation = orgAPI.get_organization(orgid)
 
 ## create flight
 
-flightfiles = [x for x in os.listdir(integration_dir) if 'maq' in x]
+flightfiles = [x for x in os.listdir(integration_dir) if 'maq' in x and study in x]
+
 
 for flightfile in flightfiles:
+    if not ('demographics' in flightfile or 'respondents' in flightfile or 'subjects' in flightfile):
+        continue
+    
+    # flightfile =  flightfiles[2]
+    print("Integrating %s"%flightfile)
 
     tud_flight = os.path.join(integration_dir, flightfile)
     flightpart = flightfile.split("_")[2].split(".")[0]
@@ -66,6 +76,7 @@ for flightfile in flightfiles:
     f = open(tmpfile, 'w')
     f.write(s)
     f.close()
+
 
     fl = flight.flight(edmAPI)
     fl.deserialise(tmpfile)
@@ -84,11 +95,13 @@ for flightfile in flightfiles:
         except openlattice.rest.ApiException:
             print("This entity already exists, not deleting anything for: %s"%entityset['name'])
             entsetid = edmAPI.get_entity_set_id(entityset['name'])
-            # dataAPI.delete_all_entities_from_entity_set(entsetid, "Hard")
-        entsetid = [edmAPI.get_entity_set_id(entityset['name'])][0]
+        #     dataAPI.delete_all_entities_from_entity_set(entsetid, "Hard")
+        #     edmAPI.delete_entity_set(entsetid)
+        #     edmAPI.create_entity_sets(entity_set=[entityset])
+        entsetid = edmAPI.get_entity_set_id(entityset['name'])
 
         # add to organisation
-
+        
         meta_data_update = openlattice.MetaDataUpdate(
             organization_id = orgid
         )
@@ -96,20 +109,20 @@ for flightfile in flightfiles:
             entity_set_id = entsetid,
             meta_data_update = meta_data_update
         )
-
+        
         # assign owner permissions
-
+        
         for role in ['OWNER', "READ", "MATERIALIZE"]:
-
+        
             rolid = [x for x in organisation.roles if role.replace("Z", "S") in x.title][0].principal.id
             aces = [openlattice.Ace(
                 principal = openlattice.Principal(type="ROLE", id= rolid),
                 permissions = [role]
             )]
-
+        
             acldata = openlattice.AclData(action = "ADD",
                 acl = openlattice.Acl(acl_key = [entsetid],aces = aces))
-
+        
             permissionsAPI.update_acl(acldata)
             properties = edmAPI.get_entity_type(entityset['entityTypeId'])
             propids = list(set(properties.properties + properties.key))
@@ -118,13 +131,15 @@ for flightfile in flightfiles:
                     acl = openlattice.Acl(acl_key = [entsetid,propid],aces = aces))
                 permissionsAPI.update_acl(acldata)
 
-    statement = "{shuttle} --flight {flight} --token {token} --csv \"{csv}\" --environment PRODUCTION".format(
+    statement = "{shuttle} --flight {flight} --token {token} --csv \"{csv}\" --environment  {local} ".format(
         shuttle = shuttle,
         flight = tmpfile,
         token = jwt,
-        csv = cleanfile
+        csv = cleanfile,
+        local = "LOCAL" if args.local else "PRODUCTION"
     )
-    
+
     print(statement)
+
     done = os.popen(statement)
     print(done.read())
