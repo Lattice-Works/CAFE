@@ -2,6 +2,7 @@
 library(tidyverse)
 library(lubridate)
 library(readxl)
+library(stringi)
 
 # filenames
 args <- commandArgs()
@@ -19,17 +20,22 @@ if (!is.na(rawfile2)){
 }
 
 # read data
+MAQ <- tibble()
 for (file in rawfiles){
-  MAQ <- tibble()
   if (endsWith(file, "csv")){
     thisMAQ <- read_csv(file) %>% slice(3:n())
   } else {
-    thisMAQ <- read_excel(file)
+    thisMAQ <- read_excel(file) %>% slice(3:n())
   }
   MAQ <- rbind(MAQ, thisMAQ)  
 }
 
-MAQ <- MAQ[,1:200]
+if ("Q71_1" %in% names(MAQ)){
+  MAQ <- MAQ %>% mutate(
+    Q71_1 = iconv(Q71_1,"UTF-8", sub=''),
+    Q71_7 = iconv(Q71_1,"UTF-8", sub='')
+  )
+}
 
 if (!(is.na(demographyfile) | demographyfile == "")){
   demography <- read_csv(demographyfile) %>% group_by(appcode) %>%
@@ -40,9 +46,10 @@ if (!(is.na(demographyfile) | demographyfile == "")){
 participants <- read_csv(participant_decoding_file)
 participants <- participants %>% replace_na(list(respondent_id = 1))
 
-MAQ <- MAQ %>%
+MAQ <- MAQ %>% drop_na(id_column) %>%
   rename(maq_id = id_column) %>%
   left_join(participants, by = "maq_id") %>%
-  mutate(respondent_id = paste0(child_id, respondent_id, separator="-"))
+    rowwise() %>%
+  mutate(respondent_id = paste0(child_id, respondent_id, collapse="-"))
 
 write_csv(MAQ, cleanfile, na="")
