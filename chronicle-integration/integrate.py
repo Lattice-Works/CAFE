@@ -41,6 +41,9 @@ for datafile in datafiles:
 
     parsed = datafile.split("__")
     
+    if len(parsed) > 5:
+        raise ValueError("ugh, the file can't be parsed cleanly...")
+    
     chronicle_app_data_entset = "chronicle_app_data"
     chronicle_recorded_by_entset = "chronicle_recorded_by"
     chronicle_devices_entset = "chronicle_device"
