@@ -42,8 +42,8 @@ with open(os.path.join(code_dir,"integration/config.yaml"), 'r') as fl:
 with open(os.path.join(code_dir,"integration/secrets.yaml"), 'r') as fl:
     secrets = yaml.load(fl)
 
-jwt = OL.get_jwt(secrets, user="cafe")['access_token']
-# jwt = args.jwt
+# jwt = OL.get_jwt(secrets, user="cafe")['access_token']
+jwt = args.jwt
 configuration = OL.get_config(jwt, local=args.local)
 
 edmAPI = openlattice.EdmApi(openlattice.ApiClient(configuration))
@@ -57,9 +57,10 @@ permissionsAPI = openlattice.PermissionsApi(openlattice.ApiClient(configuration)
 
 # cafe_org_id = '7349c446-2acc-4d14-b2a9-a13be39cff93'
 # cafe_org = orgAPI.get_organization(cafe_org_id)
-org = studyconfig['studies'][study]['organisation']
-orgid = studyconfig['organisations'][org]['id']
-organisation = orgAPI.get_organization(orgid)
+if not args.local:
+    org = studyconfig['studies'][study]['organisation']
+    orgid = studyconfig['organisations'][org]['id']
+    organisation = orgAPI.get_organization(orgid)
 
 ## create flight
 
@@ -81,6 +82,8 @@ entitysets = fl.get_all_entitysets(
     contacts = studyconfig['studies'][study]['emails'])
 
 for entityset in entitysets:
+    
+    print("setting up %s ..."%entityset['name'])
 
     # create entity set
 
@@ -88,41 +91,42 @@ for entityset in entitysets:
         edmAPI.create_entity_sets(entity_set=[entityset])
     except openlattice.rest.ApiException:
         print("This entity already exists, clearing now: %s"%entityset['name'])
-        # entsetid = edmAPI.get_entity_set_id(entityset['name'])
-        # dataAPI.delete_all_entities_from_entity_set(entsetid, "Hard")
-    entsetid = edmAPI.get_entity_set_id(entityset['name'])
+        entsetid = edmAPI.get_entity_set_id(entityset['name'])
+        dataAPI.delete_all_entities_from_entity_set(entsetid, "Hard")
+    if not args.local:
+        entsetid = edmAPI.get_entity_set_id(entityset['name'])
 
-    # assign owner permissions
+        # assign owner permissions
 
-    for role in ["OWNER", "READ", "READ DEIDENTIFIED"]:
-        roleperm = role.split(" ")[0]
-    
-        rolid = [x for x in organisation.roles if x.title.endswith(role.replace("Z", "S"))][0].principal.id
-        aces = [openlattice.Ace(
-            principal = openlattice.Principal(type="ROLE", id= rolid),
-            permissions = [roleperm]
-        )]
-    
-        acldata = openlattice.AclData(action = "ADD",
-            acl = openlattice.Acl(acl_key = [entsetid],aces = aces))
-    
-        permissionsAPI.update_acl(acldata)
-        properties = edmAPI.get_entity_type(entityset['entityTypeId'])
-        propids = list(set(properties.properties + properties.key))
-        for propid in propids:
-            if propid == '5260cfbd-bfa4-40c1-ade5-cd83cc9f99b2' and role == "READ DEIDENTIFIED":
-                continue
-    
+        for role in ["OWNER", "READ", "READ DEIDENTIFIED"]:
+            roleperm = role.split(" ")[0]
+        
+            rolid = [x for x in organisation.roles if x.title.endswith(role.replace("Z", "S"))][0].principal.id
+            aces = [openlattice.Ace(
+                principal = openlattice.Principal(type="ROLE", id= rolid),
+                permissions = [roleperm]
+            )]
+        
             acldata = openlattice.AclData(action = "ADD",
-                acl = openlattice.Acl(acl_key = [entsetid,propid],aces = aces))
+                acl = openlattice.Acl(acl_key = [entsetid],aces = aces))
+        
             permissionsAPI.update_acl(acldata)
+            properties = edmAPI.get_entity_type(entityset['entityTypeId'])
+            propids = list(set(properties.properties + properties.key))
+            for propid in propids:
+                if propid == '5260cfbd-bfa4-40c1-ade5-cd83cc9f99b2' and role == "READ DEIDENTIFIED":
+                    continue
+        
+                acldata = openlattice.AclData(action = "ADD",
+                    acl = openlattice.Acl(acl_key = [entsetid,propid],aces = aces))
+                permissionsAPI.update_acl(acldata)
 
 statement = "{shuttle} --flight {flight} --token {token} --csv \"{csv}\" --environment {local} --upload-size 500".format(
     shuttle = shuttle,
     flight = tmpfile,
     token = jwt,
     csv = cleanfile,
-    local = "LOCAL" if args.local else "PRODUCTION"
+    local = "LOCAL" if args.local else "PROD_INTEGRATION"
 )
 print(statement)
 p = Popen(statement, shell=True, stdout = PIPE, stderr= PIPE)

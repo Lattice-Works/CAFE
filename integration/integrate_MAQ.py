@@ -43,6 +43,8 @@ jwt = OL.get_jwt(secrets, user="cafe", local=True)['access_token']
 jwt = args.jwt
 
 configuration = OL.get_config(jwt, local=args.local)
+with open(os.path.join(code_dir, "integration/config.yaml"), 'r') as fl:
+    config = yaml.load(fl)
 
 edmAPI = openlattice.EdmApi(openlattice.ApiClient(configuration))
 dataAPI = openlattice.DataApi(openlattice.ApiClient(configuration))
@@ -52,18 +54,15 @@ permissionsAPI = openlattice.PermissionsApi(openlattice.ApiClient(configuration)
 
 # get organization
 
-org = studyconfig['studies'][study]['organisation']
-orgid = studyconfig['organisations'][org]['id']
-organisation = orgAPI.get_organization(orgid)
+if not args.local:
+    org = studyconfig['studies'][study]['organisation']
+    orgid = studyconfig['organisations'][org]['id']
+    organisation = orgAPI.get_organization(orgid)
 
 ## create flight
-
-flightfiles = [x for x in os.listdir(integration_dir) if 'maq' in x and study in x]
-
+flightfiles = config['studies'][study]['MAQflights']
 
 for flightfile in flightfiles:
-    if not ('demographics' in flightfile or 'respondents' in flightfile or 'subjects' in flightfile):
-        continue
     
     # flightfile =  flightfiles[2]
     print("Integrating %s"%flightfile)
@@ -95,48 +94,49 @@ for flightfile in flightfiles:
         except openlattice.rest.ApiException:
             print("This entity already exists, not deleting anything for: %s"%entityset['name'])
             entsetid = edmAPI.get_entity_set_id(entityset['name'])
-        #     dataAPI.delete_all_entities_from_entity_set(entsetid, "Hard")
-        #     edmAPI.delete_entity_set(entsetid)
-        #     edmAPI.create_entity_sets(entity_set=[entityset])
+            dataAPI.delete_all_entities_from_entity_set(entsetid, "Hard")
+            # edmAPI.delete_entity_set(entsetid)
+            # edmAPI.create_entity_sets(entity_set=[entityset])
         entsetid = edmAPI.get_entity_set_id(entityset['name'])
 
         # add to organisation
         
-        meta_data_update = openlattice.MetaDataUpdate(
-            organization_id = orgid
-        )
-        edmAPI.update_entity_set_meta_data(
-            entity_set_id = entsetid,
-            meta_data_update = meta_data_update
-        )
-        
-        # assign owner permissions
-        
-        for role in ['OWNER', "READ", "MATERIALIZE"]:
-        
-            rolid = [x for x in organisation.roles if role.replace("Z", "S") in x.title][0].principal.id
-            aces = [openlattice.Ace(
-                principal = openlattice.Principal(type="ROLE", id= rolid),
-                permissions = [role]
-            )]
-        
-            acldata = openlattice.AclData(action = "ADD",
-                acl = openlattice.Acl(acl_key = [entsetid],aces = aces))
-        
-            permissionsAPI.update_acl(acldata)
-            properties = edmAPI.get_entity_type(entityset['entityTypeId'])
-            propids = list(set(properties.properties + properties.key))
-            for propid in propids:
+        if not args.local:
+            meta_data_update = openlattice.MetaDataUpdate(
+                organization_id = orgid
+            )
+            edmAPI.update_entity_set_meta_data(
+                entity_set_id = entsetid,
+                meta_data_update = meta_data_update
+            )
+            
+            # assign owner permissions
+            
+            for role in ['OWNER', "READ", "MATERIALIZE"]:
+            
+                rolid = [x for x in organisation.roles if role.replace("Z", "S") in x.title][0].principal.id
+                aces = [openlattice.Ace(
+                    principal = openlattice.Principal(type="ROLE", id= rolid),
+                    permissions = [role]
+                )]
+            
                 acldata = openlattice.AclData(action = "ADD",
-                    acl = openlattice.Acl(acl_key = [entsetid,propid],aces = aces))
+                    acl = openlattice.Acl(acl_key = [entsetid],aces = aces))
+            
                 permissionsAPI.update_acl(acldata)
+                properties = edmAPI.get_entity_type(entityset['entityTypeId'])
+                propids = list(set(properties.properties + properties.key))
+                for propid in propids:
+                    acldata = openlattice.AclData(action = "ADD",
+                        acl = openlattice.Acl(acl_key = [entsetid,propid],aces = aces))
+                    permissionsAPI.update_acl(acldata)
 
     statement = "{shuttle} --flight {flight} --token {token} --csv \"{csv}\" --environment  {local} ".format(
         shuttle = shuttle,
         flight = tmpfile,
         token = jwt,
         csv = cleanfile,
-        local = "LOCAL" if args.local else "PRODUCTION"
+        local = "LOCAL" if args.local else "PROD_INTEGRATION"
     )
 
     print(statement)

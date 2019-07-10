@@ -53,35 +53,38 @@ studies:
     organisation: Cafe - BYU
     emails: ['joke@openlattice.com', 'mollie@openlattice.com']
     MAQflights:
+    - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_childlanguage_BYU.yaml
     - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_demographics_BYU.yaml
     - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_householdlanguage_BYU.yaml
     - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_mediacontent_BYU.yaml
     - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_mediadevices_BYU.yaml
     - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_mobilecontent_BYU.yaml
-    # - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_parentattitudes_BYU.yaml
+    - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_parentattitudes_BYU.yaml
     - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_parentingstressindex_BYU.yaml
-    # - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_parentmood_BYU.yaml
+    - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_parentmood_BYU.yaml
     - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_parentsmediation_BYU.yaml
     - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_parentsmediause_BYU.yaml
     - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_sleep_BYU.yaml
     - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_timeuse_BYU.yaml
-    # - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_videochat_BYU.yaml
+    - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_videochat_BYU.yaml
   PM:
     organisation: Cafe - BYU
     emails: ['joke@openlattice.com', 'mollie@openlattice.com']
     MAQflights:
-    - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_demographics_BYU.yaml
-    - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_householdlanguage_BYU.yaml
-    - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_mediacontent_BYU.yaml
-    - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_mediadevices_BYU.yaml
-    - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_mobilecontent_BYU.yaml
+    # - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_childlanguage_BYU.yaml
+    # - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_demographics_BYU.yaml
+    # - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_householdlanguage_BYU.yaml
+    # - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_mediacontent_BYU.yaml
+    # - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_mediadevices_BYU.yaml
+    # - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_mobilecontent_BYU.yaml
     # - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_parentattitudes_BYU.yaml
-    - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_parentingstressindex_BYU.yaml
+    # - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_parentingstressindex_BYU.yaml
     # - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_parentmood_BYU.yaml
-    - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_parentsmediation_BYU.yaml
+    # - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_parentsmediation_BYU.yaml
     - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_parentsmediause_BYU.yaml
+    - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_sleep_BYU.yaml
     - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_timeuse_BYU.yaml
-    # - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_videochat_BYU.yaml
+    - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_videochat_BYU.yaml
   UM:
     organisation: Cafe - UM
     emails: ['joke@openlattice.com', 'mollie@openlattice.com']
@@ -91,51 +94,60 @@ studies:
     - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_mediacontent_UM.yaml
     - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_mediadevices_UM.yaml
     - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_mobilecontent_UM.yaml
-    # - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_parentattitudes_UM.yaml
+    - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_parentattitudes_UM.yaml
     # - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_parentingstressindex_UM.yaml
     # - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_parentmood_UM.yaml
     - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_parentsmediation_UM.yaml
     - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_parentsmediause_UM.yaml
-    # - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_sleep_UM.yaml
+    - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_sleep_UM.yaml
     - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_timeuse_UM.yaml
     # - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_videochat_UM.yaml
   UWCRT:
     organisation: Cafe - WISC
     emails: ['joke@openlattice.com', 'mollie@openlattice.com']
     MAQflights:
-    - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/
+    - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_demographics_UWCRT.yaml
+    - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_mobilecontent_UWCRT.yaml
+    - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_householdlanguage_UWCRT.yaml
+    - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_timeuse_UWCRT.yaml
+    - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_mediacontent_UWCRT.yaml
+    - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_videochat_UWCRT.yaml
+    - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_mediadevices_UWCRT.yaml
+
   WIAMP:
     organisation: Cafe - WISC
     emails: ['joke@openlattice.com', 'mollie@openlattice.com']
     MAQflights:
+    - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_childlanguage_WIAMP.yaml
     - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_demographics_WIAMP.yaml
     - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_householdlanguage_WIAMP.yaml
     - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_mediacontent_WIAMP.yaml
     - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_mediadevices_WIAMP.yaml
     - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_mediadevices2_WIAMP.yaml
     - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_mobilecontent_WIAMP.yaml
-    # - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_parentattitudes_WIAMP.yaml
+    - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_parentattitudes_WIAMP.yaml
     - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_parentingstressindex_WIAMP.yaml
-    # - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_parentmood_WIAMP.yaml
+    - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_parentmood_WIAMP.yaml
     - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_parentsmediation_WIAMP.yaml
     - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_parentsmediause_WIAMP.yaml
     - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_sleep_WIAMP.yaml
     - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_timeuse_WIAMP.yaml
-    # - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_videochat_WIAMP.yaml
+    - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_videochat_WIAMP.yaml
   GU:
     organisation: Cafe - GU
     emails: ['joke@openlattice.com', 'mollie@openlattice.com']
     MAQflights:
+    - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_childlanguage_GU.yaml
     - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_demographics_GU.yaml
     - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_householdlanguage_GU.yaml
     - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_mediacontent_GU.yaml
     - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_mediadevices_GU.yaml
     - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_mobilecontent_GU.yaml
-    # - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_parentattitudes_GU.yaml
+    - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_parentattitudes_GU.yaml
     - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_parentingstressindex_GU.yaml
-    # - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_parentmood_GU.yaml
+    - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_parentmood_GU.yaml
     - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_parentsmediation_GU.yaml
     - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_parentsmediause_GU.yaml
-    # - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_sleep_GU.yaml
+    - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_sleep_GU.yaml
     - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_timeuse_GU.yaml
-    # - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_videochat_GU.yaml
+    - /Users/jokedurnez/Documents/Integrations/CAFE-integrations/cafe_maq_videochat_GU.yaml
