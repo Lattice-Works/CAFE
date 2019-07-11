@@ -4,6 +4,11 @@ This repository contains code used to analyse data generated within the cafe col
 
 Between the raw data, and the CAFE dashboard, there are a number of steps to write, extract, transform and load the data onto the openlattice platform and from the platform to the human readable dashboard.  Below is a schematic representation of the formats the data is presented in, and the tools to transform from one step to the next.
 
+This repository combines sub-repositories that each handle a step between the raw data and the dashboard:
+- CAFE-dashboard: the R code of the shiny dashboard
+- CAFE-data-analysis: the R code for data transformations between the Open Lattice platform and the recombined data
+- CAFE-integrations: the flights to define the relationship from raw data to standardised data model.
+
 ![alt text](media/CAFE-flow-3.png)
 
 ## 1. Data integrations
