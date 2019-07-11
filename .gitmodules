@@ -10,3 +10,6 @@
 [submodule "CAFE-attention"]
 	path = CAFE-attention
 	url = https://github.com/Lattice-Works/CAFE-attention.git
+[submodule "CAFE-integrations"]
+	path = CAFE-integrations
+	url = https://github.com/Lattice-Works/CAFE-integrations.git
