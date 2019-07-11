@@ -1,0 +1,12 @@
+[submodule "CAFE-data-analysis"]
+	path = CAFE-data-analysis
+	url = https://github.com/Lattice-Works/CAFE-data-analysis.git
+[submodule "CAFE-dashboard"]
+	path = CAFE-dashboard
+	url = https://github.com/Lattice-Works/CAFE-dashboard.git
+[submodule "chronicle-analysis"]
+	path = chronicle-analysis
+	url = https://github.com/Lattice-Works/chronicle-analysis.git
+[submodule "CAFE-attention"]
+	path = CAFE-attention
+	url = https://github.com/Lattice-Works/CAFE-attention.git
