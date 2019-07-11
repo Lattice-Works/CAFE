@@ -18,16 +18,20 @@ To move the data from the raw form to the Open Lattice model, we use a program c
 
 ## 2. Recombining data
 
-### 2a. Pulling and transforming data from the open lattice platform
+### 2a. Pulling and transforming data from the Open Lattice platform
 
 We have a variety of ways to pull the data from the platform into a usable format.  The code in `CAFE-data-analysis` uses the API-clients to recover the data.  We are currently building a system that allows users to directly connect to the database (using for example python, R, tableau,...), which will speed up reading and handling data.
 
 ### 2b. Postprocessing data
 
-After having recovered data into a tabular form, we can postprocess the data, using simple column-wise transformations
+After having recovered data into a tabular form, we can postprocess the data, using simple column-wise transformations.
+
+For both steps, we use R.
 
 ## 3. Visualising data
 
 The Open Lattice platform is ideally suited to share data with collaborators.  By setting permissions (see https://help.openlattice.com), you can allow deidentified sharing, identified sharing, or aggregate sharing.  The dashboard allows researchers to see each others' aggregate data, while keeping the raw data hidden.
+
+The dashboard is written in shiny (R).
 
 ![alt text](media/CAFE-flow-2.png)
